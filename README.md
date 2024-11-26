@@ -13,18 +13,21 @@
 
 # Demo and Screenshots :movie_camera:
 
-## View live preview [here](https://ec-currency-exchange.vercel.app).
+## View live preview [here](https://ec-dynamic-table.vercel.app).
 
 
 ---
 
 # Sections :bookmark:
 
-- Home Page
-![](./public/image/home.png)
+- Add columns
+![](./public/image/columnsform.png)
 
-- Result card
-![](./public/image/result.png)
+- Add Data 
+![](./public/image/dataform.png)
+
+- Data table 
+![](./public/image/datatable.png)
 
 ---
 
@@ -61,14 +64,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ---
 
 # Usage :joystick:
-## To Use Fixer API
+## To Add colums
+Enter colums name you want to add in and click "Add Columns" to add that colums. You can add multiple columns one after another 
 
-Goto [fixer.io](https://fixer.io) and create a new account for the api access. After setup `fixer` account, Please create a new `.env` file.
-
-Eg:
-
-```env
-API_BASE_URL = your_base_url
-API_ACCESS_KEY = your_access_key
-```
-
+## To Add Data
+Enter data you want to add in and click "Add Row" to add that data. You can add data to multiple columns at once
