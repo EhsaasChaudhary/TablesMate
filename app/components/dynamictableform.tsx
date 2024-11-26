@@ -17,6 +17,7 @@ export function TableDataForm() {
   const [newColumn, setNewColumn] = useState("");
   const [newRow, setNewRow] = useState<TableData>({});
 
+  // Add column function
   const addColumn = () => {
     if (newColumn && !columns.includes(newColumn)) {
       setColumns([...columns, newColumn]);
@@ -26,30 +27,40 @@ export function TableDataForm() {
     }
   };
 
+  // Remove column function
   const removeColumn = (columnToRemove: string) => {
     setColumns(columns.filter((column) => column !== columnToRemove));
     setData(
       data.map((row) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [columnToRemove]: _, ...rest } = row;
         return rest;
       })
     );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [columnToRemove]: _, ...restNewRow } = newRow;
     setNewRow(restNewRow);
   };
 
+  // Add row function with validation
   const addRow = () => {
-    if (Object.keys(newRow).length > 0) {
+    if (Object.values(newRow).every((value) => value.trim() !== "")) {
       setData([...data, newRow]);
       setNewRow(
         columns.reduce((acc, column) => ({ ...acc, [column]: "" }), {})
       );
+    } else {
+      alert("All fields must be filled before adding a row.");
     }
   };
 
+  // Update new row values
   const updateNewRow = (column: string, value: string) => {
     setNewRow({ ...newRow, [column]: value });
   };
+
+  // Disable Add Row button if any field is empty
+  const isAddRowDisabled = Object.values(newRow).some((value) => value.trim() === "");
 
   return (
     <div className="space-y-6">
@@ -96,11 +107,12 @@ export function TableDataForm() {
               </div>
             ))}
           </div>
-          <Button onClick={addRow}>
+          <Button onClick={addRow} disabled={isAddRowDisabled}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Row
           </Button>
         </div>
       )}
+
       {columns.length > 0 && data.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-2">Generated Table</h2>

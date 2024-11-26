@@ -7,7 +7,7 @@
 
 # Task Description
 
-### Build an app that converts currencies using real-time exchange rates.
+### Create dynamic table based on array values it will automatic create table for that.
 
 ---
 
