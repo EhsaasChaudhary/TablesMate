@@ -17,13 +17,30 @@ export function TableDataForm() {
   const [newColumn, setNewColumn] = useState("");
   const [newRow, setNewRow] = useState<TableData>({});
 
-  // Add column function
-  const addColumn = () => {
-    if (newColumn && !columns.includes(newColumn)) {
-      setColumns([...columns, newColumn]);
+  const addColumns = () => {
+    // Split the input by commas and trim whitespace
+    const newColumns = newColumn
+      .split(",")
+      .map((col) => col.trim())
+      .filter((col) => col && !columns.includes(col)); // Avoid empty and duplicate columns
+
+    if (newColumns.length > 0) {
+      setColumns([...columns, ...newColumns]); // Add new columns
       setNewColumn("");
-      setData(data.map((row) => ({ ...row, [newColumn]: "" })));
-      setNewRow({ ...newRow, [newColumn]: "" });
+
+      // Update existing data rows to include the new columns with empty values
+      setData(
+        data.map((row) =>
+          newColumns.reduce((acc, col) => ({ ...acc, [col]: "" }), row)
+        )
+      );
+
+      // Update the new row template to include the new columns with empty values
+      const updatedNewRow = newColumns.reduce(
+        (acc, col) => ({ ...acc, [col]: "" }),
+        newRow
+      );
+      setNewRow(updatedNewRow);
     }
   };
 
@@ -60,7 +77,9 @@ export function TableDataForm() {
   };
 
   // Disable Add Row button if any field is empty
-  const isAddRowDisabled = Object.values(newRow).some((value) => value.trim() === "");
+  const isAddRowDisabled = Object.values(newRow).some(
+    (value) => value.trim() === ""
+  );
 
   return (
     <div className="space-y-6">
@@ -68,16 +87,16 @@ export function TableDataForm() {
         <h2 className="text-lg font-semibold mb-2">Add Columns</h2>
         <div className="flex items-end space-x-2">
           <div className="flex-grow">
-            <Label htmlFor="newColumn">New Column</Label>
+            <Label htmlFor="newColumn">New Columns:</Label>
             <Input
               id="newColumn"
               value={newColumn}
               onChange={(e) => setNewColumn(e.target.value)}
-              placeholder="Enter column name"
+              placeholder="Enter column names seperated by commas: e.g., First name, Last name, Age"
             />
           </div>
-          <Button onClick={addColumn}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Column
+          <Button onClick={addColumns}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Columns
           </Button>
         </div>
       </div>
