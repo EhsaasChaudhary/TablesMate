@@ -7,13 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface TableProps {
-  columns: string[]; // Array of column headers
-  data?: Record<string, string>[]; // Optional array of data objects
+  columns: string[];
+  data?: Record<string, string>[];
+  deleteRow?: (index: number) => void;
 }
 
-export const DynamicTable: React.FC<TableProps> = ({ columns, data = [] }) => {
+export const DynamicTable: React.FC<TableProps> = ({ columns, data = [], deleteRow }) => {
   return (
     <div className="w-full overflow-auto">
       <Table className="table-auto border-collapse border border-gray-300 shadow-md">
@@ -27,6 +30,14 @@ export const DynamicTable: React.FC<TableProps> = ({ columns, data = [] }) => {
                 {col}
               </TableHead>
             ))}
+            {/* Add a header for the delete column */}
+            {deleteRow && (
+              <TableHead
+                className="text-center bg-gray-200 p-3 border-b border-gray-300 font-semibold"
+              >
+                Actions
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -41,15 +52,27 @@ export const DynamicTable: React.FC<TableProps> = ({ columns, data = [] }) => {
                     key={colIndex}
                     className="text-center p-3 border-b border-gray-200"
                   >
-                    {row[col] || "-"} {/* Displaying '-' if the value is empty */}
+                    {row[col] || "-"}
                   </TableCell>
                 ))}
+                {/* Add delete button for each row */}
+                {deleteRow && (
+                  <TableCell className="text-center p-3 border-b border-gray-200">
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => deleteRow(rowIndex)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             ))
           ) : (
             <TableRow>
               <TableCell
-                colSpan={columns.length}
+                colSpan={columns.length + (deleteRow ? 1 : 0)}
                 className="text-center p-3 border-b border-gray-200 text-gray-500"
               >
                 No data available

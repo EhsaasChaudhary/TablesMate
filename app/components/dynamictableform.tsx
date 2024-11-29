@@ -29,6 +29,7 @@ export function TableDataForm() {
       setNewColumn("");
 
       // Update existing data rows to include the new columns with empty values
+      
       setData(
         data.map((row) =>
           newColumns.reduce((acc, col) => ({ ...acc, [col]: "" }), row)
@@ -36,6 +37,7 @@ export function TableDataForm() {
       );
 
       // Update the new row template to include the new columns with empty values
+
       const updatedNewRow = newColumns.reduce(
         (acc, col) => ({ ...acc, [col]: "" }),
         newRow
@@ -69,6 +71,10 @@ export function TableDataForm() {
     } else {
       alert("All fields must be filled before adding a row.");
     }
+  };
+
+  const deleteRow = (index: number) => {
+    setData(data.filter((_, rowIndex) => rowIndex !== index));
   };
 
   // Update new row values
@@ -135,7 +141,7 @@ export function TableDataForm() {
       {columns.length > 0 && data.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-2">Generated Table</h2>
-          <DynamicTable columns={columns} data={data} />
+          <DynamicTable columns={columns} data={data} deleteRow={deleteRow} />
         </div>
       )}
     </div>
