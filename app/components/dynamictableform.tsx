@@ -18,48 +18,56 @@ export function TableDataForm() {
   const [newRow, setNewRow] = useState<TableData>({});
 
   const addColumns = () => {
-    // Split the input by commas and trim whitespace
+    // Split the input by commas, trim whitespace, and filter out duplicates
     const newColumns = newColumn
       .split(",")
       .map((col) => col.trim())
-      .filter((col) => col && !columns.includes(col)); // Avoid empty and duplicate columns
-
+      .filter((col) => col && !columns.includes(col));
+  
     if (newColumns.length > 0) {
-      setColumns([...columns, ...newColumns]); // Add new columns
-      setNewColumn("");
-
-      // Update existing data rows to include the new columns with empty values
-      
-      setData(
-        data.map((row) =>
+      if (columns.length === 0) {
+        // If there are no existing columns, clear data before adding new columns
+        setData([]);
+      }
+  
+      // Add new columns
+      setColumns((prevColumns) => [...prevColumns, ...newColumns]);
+  
+      // Update existing data rows to include new columns with empty values
+      setData((prevData) =>
+        prevData.map((row) =>
           newColumns.reduce((acc, col) => ({ ...acc, [col]: "" }), row)
         )
       );
-
-      // Update the new row template to include the new columns with empty values
-
-      const updatedNewRow = newColumns.reduce(
-        (acc, col) => ({ ...acc, [col]: "" }),
-        newRow
+  
+      // Update the new row template to include new columns with empty values
+      setNewRow((prevNewRow) =>
+        newColumns.reduce((acc, col) => ({ ...acc, [col]: "" }), prevNewRow)
       );
-      setNewRow(updatedNewRow);
+  
+      // Clear the input field
+      setNewColumn("");
     }
   };
+  
+  
 
   // Remove column function
   const removeColumn = (columnToRemove: string) => {
-    setColumns(columns.filter((column) => column !== columnToRemove));
-    setData(
-      data.map((row) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [columnToRemove]: _, ...rest } = row;
-        return rest;
-      })
+    // Remove the column from the columns list
+    setColumns((prevColumns) => prevColumns.filter((column) => column !== columnToRemove));
+  
+    // Remove the column from each row in data
+    setData((prevData) =>
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      prevData.map(({ [columnToRemove]: _, ...rest }) => rest)
     );
+  
+    // Remove the column from the newRow template
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [columnToRemove]: _, ...restNewRow } = newRow;
-    setNewRow(restNewRow);
+    setNewRow(({ [columnToRemove]: _, ...restNewRow }) => restNewRow);
   };
+  
 
   // Add row function with validation
   const addRow = () => {
