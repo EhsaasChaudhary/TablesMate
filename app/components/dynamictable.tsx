@@ -130,7 +130,7 @@ export const DynamicTable: React.FC<TableProps> = ({
                         aria-label="Save changes"
                       >
                         <Check className="h-4 w-4 mr-1" />
-                        Save
+                        <span className="sm:block hidden">Save</span>
                       </Button>
                       <Button
                         variant="secondary"
@@ -139,7 +139,7 @@ export const DynamicTable: React.FC<TableProps> = ({
                         aria-label="Cancel edit"
                       >
                         <X className="h-4 w-4 mr-1" />
-                        Cancel
+                        <span className="sm:block hidden">Cancel</span>
                       </Button>
                     </div>
                   ) : (
@@ -151,7 +151,7 @@ export const DynamicTable: React.FC<TableProps> = ({
                         aria-label={`Edit row ${rowIndex + 1}`}
                       >
                         <Edit3 className="h-4 w-4 mr-1" />
-                        Edit
+                        <span className="sm:block hidden">Edit</span>
                       </Button>
                       {deleteRow && (
                         <Button
@@ -161,7 +161,7 @@ export const DynamicTable: React.FC<TableProps> = ({
                           aria-label={`Delete row ${rowIndex + 1}`}
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
+                          <span className="sm:block hidden">Delete</span>
                         </Button>
                       )}
                     </div>
