@@ -41,18 +41,23 @@ export function EnhancedInputForm() {
   const [tables, setTables] = useState<Record<string, TableData>>({});
   const [currentTable, setCurrentTable] = useState<string>("");
   const [newTableName, setNewTableName] = useState<string>("");
+
   const [columnName, setColumnName] = useState<string>("");
   const [rowData, setRowData] = useState<Record<string, string>>({});
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
   >([]);
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editedTableNames, setEditedTableNames] = useState<
     Record<string, string>
   >({});
 
-  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
+  const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
+  const [editedColumns, setEditedColumns] = useState<string[]>([]);
 
   const { toast } = useToast();
 
@@ -186,10 +191,16 @@ export function EnhancedInputForm() {
 
     if (newColumns.length > 0) {
       setTables((prevTables) => {
-        const updatedTable = {
-          ...prevTables[currentTable],
-          columns: [...prevTables[currentTable].columns, ...newColumns],
-        };
+        const updatedTable = { ...prevTables[currentTable] };
+
+        // If there are no existing columns, clear the rows
+        if (updatedTable.columns.length === 0) {
+          updatedTable.rows = [];
+        }
+
+        // Add the new columns
+        updatedTable.columns = [...updatedTable.columns, ...newColumns];
+
         return { ...prevTables, [currentTable]: updatedTable };
       });
 
@@ -207,6 +218,69 @@ export function EnhancedInputForm() {
         variant: "destructive",
       });
     }
+  };
+
+  const saveColumnChanges = () => {
+    if (!currentTable) return;
+
+    const updatedColumns = editedColumns.map(
+      (col, i) => col || tables[currentTable].columns[i]
+    );
+
+    // Check for unique column names
+    if (new Set(updatedColumns).size !== updatedColumns.length) {
+      toast({
+        title: "Error",
+        description: "Column names must be unique.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTable = {
+        ...prevTables[currentTable],
+        columns: updatedColumns,
+      };
+      return { ...prevTables, [currentTable]: updatedTable };
+    });
+
+    toast({
+      title: "Success",
+      description: "Column names have been updated successfully.",
+    });
+
+    setEditColumnsModalOpen(false); // Close the modal
+  };
+
+  const deleteColumn = (col: string) => {
+    if (!currentTable) {
+      toast({
+        title: "Error",
+        description: "No table selected to delete columns from.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTable = {
+        ...prevTables[currentTable],
+        columns: prevTables[currentTable].columns.filter(
+          (column) => column !== col
+        ),
+        rows: prevTables[currentTable].rows.map((row) => {
+          const { [col]: _, ...remainingRow } = row; // Remove the column from row data
+          return remainingRow;
+        }),
+      };
+      return { ...prevTables, [currentTable]: updatedTable };
+    });
+
+    toast({
+      title: "Column Deleted",
+      description: `Column "${col}" has been deleted from "${currentTable}".`,
+    });
   };
 
   const addRow = () => {
@@ -231,6 +305,14 @@ export function EnhancedInputForm() {
     setSelectedTablesForDeletion([]);
   };
 
+  const handleColumnNameChange = (index: number, newName: string) => {
+    setEditedColumns((prev) => {
+      const updated = [...prev];
+      updated[index] = newName;
+      return updated;
+    });
+  };
+
   return (
     <>
       <div className="container mx-auto p-4 space-y-8">
@@ -239,15 +321,19 @@ export function EnhancedInputForm() {
             <div className="flex justify-between items-center">
               <CardTitle>Table Management</CardTitle>
               <div className="space-x-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setEditedTableNames(Object.fromEntries(Object.keys(tables).map(table => [table, table])))
-                  setEditModalOpen(true)
-                }}
-              >
-                Edit Tables
-              </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setEditedTableNames(
+                      Object.fromEntries(
+                        Object.keys(tables).map((table) => [table, table])
+                      )
+                    );
+                    setEditModalOpen(true);
+                  }}
+                >
+                  Edit Tables
+                </Button>
                 <Button
                   variant="destructive"
                   onClick={() => setDeleteModalOpen(true)}
@@ -392,48 +478,93 @@ export function EnhancedInputForm() {
 
         {/* Edit Modal */}
         <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Tables</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Label>Edit table names:</Label>
-            <div className="space-y-2">
-              {Object.keys(editedTableNames).map((tableName) => (
-                <div key={tableName} className="flex items-center space-x-2">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Tables</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Label>Edit table names:</Label>
+              <div className="space-y-2">
+                {Object.keys(editedTableNames).map((tableName) => (
+                  <div key={tableName} className="flex items-center space-x-2">
+                    <Input
+                      value={editedTableNames[tableName]}
+                      onChange={(e) =>
+                        setEditedTableNames((prev) => ({
+                          ...prev,
+                          [tableName]: e.target.value,
+                        }))
+                      }
+                      placeholder={`Edit name for ${tableName}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => {
+                  handleSaveTableEdits();
+                  setEditModalOpen(false);
+                }}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* this is the start of columns and data table section */}
+
+        {/* Edit Columns */}
+        <Dialog
+          open={editColumnsModalOpen}
+          onOpenChange={setEditColumnsModalOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Columns</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {editedColumns.map((col, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Label htmlFor={`col-${index}`} className="w-24">
+                    Column {index + 1}
+                  </Label>
                   <Input
-                    value={editedTableNames[tableName]}
+                    id={`col-${index}`}
+                    type="text"
+                    value={col}
                     onChange={(e) =>
-                      setEditedTableNames((prev) => ({
-                        ...prev,
-                        [tableName]: e.target.value,
-                      }))
+                      handleColumnNameChange(index, e.target.value)
                     }
-                    placeholder={`Edit name for ${tableName}`}
                   />
                 </div>
               ))}
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {
-                handleSaveTableEdits();
-                setEditModalOpen(false);
-              }}
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-
-      {/* this is the start of columns and data table section */}
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setEditColumnsModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => {
+                  saveColumnChanges();
+                  setEditColumnsModalOpen(false);
+                }}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <AnimatePresence>
           {currentTable && (
@@ -444,8 +575,21 @@ export function EnhancedInputForm() {
               transition={{ duration: 0.3 }}
             >
               <Card>
-                <CardHeader>
+                <CardHeader className="flex justify-between">
                   <CardTitle>Working on Table: {currentTable}</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={() => {
+                        if (currentTable) {
+                          setEditedColumns([...tables[currentTable].columns]);
+                          setEditColumnsModalOpen(true);
+                        }
+                      }}
+                      disabled={!currentTable}
+                    >
+                      Edit Columns
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex space-x-2">
@@ -468,16 +612,29 @@ export function EnhancedInputForm() {
                     <Label>Add Row</Label>
                     <div className="flex flex-wrap gap-2">
                       {tables[currentTable]?.columns.map((col) => (
-                        <Input
+                        <div
                           key={col}
-                          type="text"
-                          placeholder={col}
-                          value={rowData[col] || ""}
-                          onChange={(e) =>
-                            setRowData({ ...rowData, [col]: e.target.value })
-                          }
-                          aria-label={`Enter value in ${col}`}
-                        />
+                          className="flex items-center space-x-2 w-full sm:max-w-[calc(33%-8px)]"
+                        >
+                          <Input
+                            type="text"
+                            className="w-full"
+                            placeholder={col}
+                            value={rowData[col] || ""}
+                            onChange={(e) =>
+                              setRowData({ ...rowData, [col]: e.target.value })
+                            }
+                            aria-label={`Enter value in ${col}`}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteColumn(col)}
+                            aria-label={`Delete column ${col}`}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       ))}
                     </div>
                     <Button onClick={addRow}>Add Row</Button>
