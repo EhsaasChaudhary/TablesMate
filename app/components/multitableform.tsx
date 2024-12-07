@@ -47,6 +47,11 @@ export function EnhancedInputForm() {
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
   >([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editedTableNames, setEditedTableNames] = useState<
+    Record<string, string>
+  >({});
+
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   const { toast } = useToast();
@@ -115,6 +120,43 @@ export function EnhancedInputForm() {
     if (selectedTablesForDeletion.includes(currentTable)) {
       setCurrentTable("");
     }
+  };
+
+  const handleSaveTableEdits = () => {
+    const newTableNames = Object.values(editedTableNames);
+
+    // Check for duplicate or empty names
+    const hasDuplicates = new Set(newTableNames).size !== newTableNames.length;
+    const hasEmptyNames = newTableNames.some((name) => !name.trim());
+
+    if (hasDuplicates || hasEmptyNames) {
+      toast({
+        title: "Error",
+        description:
+          "Table names must be unique and non-empty. Please fix the errors and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTables: Record<string, TableData> = {};
+      Object.entries(prevTables).forEach(([oldName, data]) => {
+        const newName = editedTableNames[oldName];
+        updatedTables[newName] = data;
+      });
+      return updatedTables;
+    });
+
+    // Update the current table if its name was changed
+    if (editedTableNames[currentTable]) {
+      setCurrentTable(editedTableNames[currentTable]);
+    }
+
+    toast({
+      title: "Changes Saved",
+      description: "Table names have been updated successfully.",
+    });
   };
 
   const addColumns = () => {
@@ -189,6 +231,16 @@ export function EnhancedInputForm() {
     setSelectedTablesForDeletion([]);
   };
 
+  // const openEditModal = () => {
+  //   setEditedTableNames(
+  //     Object.keys(tables).reduce((acc, table) => {
+  //       acc[table] = table;
+  //       return acc;
+  //     }, {} as Record<string, string>)
+  //   );
+  //   setEditModalOpen(true);
+  // };
+
   return (
     <>
       <div className="container mx-auto p-4 space-y-8">
@@ -196,13 +248,23 @@ export function EnhancedInputForm() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Table Management</CardTitle>
+              <div className="space-x-2">
               <Button
-                variant="destructive"
-                onClick={() => setDeleteModalOpen(true)}
+                variant="secondary"
+                onClick={() => {
+                  setEditedTableNames(Object.fromEntries(Object.keys(tables).map(table => [table, table])))
+                  setEditModalOpen(true)
+                }}
               >
-                
-                Delete Table
+                Edit Tables
               </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteModalOpen(true)}
+                >
+                  Delete Table
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -337,8 +399,50 @@ export function EnhancedInputForm() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <AnimatePresence>
 
+        {/* Edit Modal */}
+        <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Tables</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Label>Edit table names:</Label>
+            <div className="space-y-2">
+              {Object.keys(editedTableNames).map((tableName) => (
+                <div key={tableName} className="flex items-center space-x-2">
+                  <Input
+                    value={editedTableNames[tableName]}
+                    onChange={(e) =>
+                      setEditedTableNames((prev) => ({
+                        ...prev,
+                        [tableName]: e.target.value,
+                      }))
+                    }
+                    placeholder={`Edit name for ${tableName}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => {
+                handleSaveTableEdits();
+                setEditModalOpen(false);
+              }}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+        <AnimatePresence>
           {currentTable && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
