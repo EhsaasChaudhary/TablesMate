@@ -141,7 +141,7 @@ return (
                     id={`newRow-${column}`}
                     value={newRow[column] || ""}
                     onChange={(e) => updateNewRow(column, e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, addRow)}
+                    onKeyUp={(e) => handleKeyPress(e, addRow)}
                     placeholder={`Enter ${column}`}
                     aria-label={`Enter value for ${column}`}
                   />

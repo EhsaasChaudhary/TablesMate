@@ -1,66 +1,171 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 interface TableData {
-  columns: string[]
-  rows: Record<string, string>[]
+  columns: string[];
+  rows: Record<string, string>[];
 }
 
 export function EnhancedInputForm() {
-  const [tables, setTables] = useState<Record<string, TableData>>({})
-  const [currentTable, setCurrentTable] = useState<string>("")
-  const [newTableName, setNewTableName] = useState<string>("")
-  const [columnName, setColumnName] = useState<string>("")
-  const [rowData, setRowData] = useState<Record<string, string>>({})
-  const { toast } = useToast()
+  const [tables, setTables] = useState<Record<string, TableData>>({});
+  const [currentTable, setCurrentTable] = useState<string>("");
+  const [newTableName, setNewTableName] = useState<string>("");
+  const [columnName, setColumnName] = useState<string>("");
+  const [rowData, setRowData] = useState<Record<string, string>>({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
+    string[]
+  >([]);
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
-  const addNewTable = () => {
-    if (newTableName && !tables[newTableName]) {
-      setTables((prevTables) => ({
-        ...prevTables,
-        [newTableName]: { columns: [], rows: [] },
-      }))
-      setNewTableName("")
-      setCurrentTable(newTableName)
+  const { toast } = useToast();
+
+  const addNewTables = () => {
+    if (!newTableName) {
       toast({
-        title: "Table Created",
-        description: `New table "${newTableName}" has been created successfully.`,
-      })
+        title: "Error",
+        description:
+          "Please enter one or more table names separated by commas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTableNames = newTableName
+      .split(",")
+      .map((table) => table.trim())
+      .filter((table) => table && !tables[table]); // Ensure non-empty and unique table names
+
+    if (newTableNames.length > 0) {
+      setTables((prevTables) => {
+        const updatedTables = { ...prevTables };
+        newTableNames.forEach((table) => {
+          updatedTables[table] = { columns: [], rows: [] };
+        });
+        return updatedTables;
+      });
+
+      toast({
+        title: "Tables Created",
+        description: `New tables "${newTableNames.join(
+          ", "
+        )}" have been created successfully.`,
+      });
+      setNewTableName(""); // Clear the input field
+      setCurrentTable(newTableNames[0]); // Set the first new table as current
     } else {
       toast({
         title: "Error",
-        description: "Please enter a unique table name.",
+        description: "Please enter unique table names.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
-  const addColumn = () => {
-    if (currentTable && columnName) {
+  const handleDeleteTables = () => {
+    setTables((prevTables) => {
+      const updatedTables = { ...prevTables };
+      selectedTablesForDeletion.forEach((tableName) => {
+        delete updatedTables[tableName];
+      });
+      return updatedTables;
+    });
+
+    // Clear selection and show toast
+    setSelectedTablesForDeletion([]);
+    toast({
+      title: "Tables Deleted",
+      description: `The tables "${selectedTablesForDeletion.join(
+        ", "
+      )}" were successfully deleted.`,
+    });
+
+    // Reset current table if it was deleted
+    if (selectedTablesForDeletion.includes(currentTable)) {
+      setCurrentTable("");
+    }
+  };
+
+  const addColumns = () => {
+    if (!currentTable) {
+      toast({
+        title: "Error",
+        description: "Please select a table to add columns.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!columnName) {
+      toast({
+        title: "Error",
+        description:
+          "Please enter one or more column names separated by commas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newColumns = columnName
+      .split(",")
+      .map((col) => col.trim())
+      .filter((col) => col && !tables[currentTable].columns.includes(col)); // Ensure non-empty and unique column names
+
+    if (newColumns.length > 0) {
       setTables((prevTables) => {
         const updatedTable = {
           ...prevTables[currentTable],
-          columns: [...prevTables[currentTable].columns, columnName],
-        }
-        return { ...prevTables, [currentTable]: updatedTable }
-      })
-      setColumnName("")
+          columns: [...prevTables[currentTable].columns, ...newColumns],
+        };
+        return { ...prevTables, [currentTable]: updatedTable };
+      });
+
       toast({
-        title: "Column Added",
-        description: `New column "${columnName}" has been added to "${currentTable}".`,
-      })
+        title: "Columns Added",
+        description: `New columns "${newColumns.join(
+          ", "
+        )}" have been added to "${currentTable}".`,
+      });
+      setColumnName(""); // Clear the input field
+    } else {
+      toast({
+        title: "Error",
+        description: "Please enter unique column names.",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const addRow = () => {
     if (currentTable) {
@@ -68,38 +173,56 @@ export function EnhancedInputForm() {
         const updatedTable = {
           ...prevTables[currentTable],
           rows: [...prevTables[currentTable].rows, { ...rowData }],
-        }
-        return { ...prevTables, [currentTable]: updatedTable }
-      })
-      setRowData({})
+        };
+        return { ...prevTables, [currentTable]: updatedTable };
+      });
+      setRowData({});
       toast({
         title: "Row Added",
         description: `New row has been added to "${currentTable}".`,
-      })
+      });
     }
-  }
+  };
+
+  const handleCloseModal = () => {
+    setDeleteModalOpen(false);
+    setSelectedTablesForDeletion([]);
+  };
 
   return (
     <>
       <div className="container mx-auto p-4 space-y-8">
         <Card>
           <CardHeader>
-            <CardTitle>Table Management</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Table Management</CardTitle>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteModalOpen(true)}
+              >
+                
+                Delete Table
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Add New Table */}
             <div className="flex space-x-2">
               <div className="flex-grow">
                 <Label htmlFor="newTableName">New Table Name</Label>
                 <Input
                   id="newTableName"
                   type="text"
-                  placeholder="Enter table name"
+                  placeholder="Enter table names separated by commas, e.g., Users, Orders, etc"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
                 />
               </div>
-              <Button onClick={addNewTable} className="mt-6">Add Table</Button>
+              <Button onClick={addNewTables} className="mt-6">
+                Add Table
+              </Button>
             </div>
+            {/* Select Table */}
             <div>
               <Label htmlFor="tableSelect">Select Table</Label>
               <Select value={currentTable} onValueChange={setCurrentTable}>
@@ -117,8 +240,105 @@ export function EnhancedInputForm() {
             </div>
           </CardContent>
         </Card>
+        {/* Delete Modal */}
+        <Dialog
+          open={deleteModalOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              handleCloseModal(); // Clear state when modal is closed
+            } else {
+              setDeleteModalOpen(true);
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Tables</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Label>Select tables to delete:</Label>
+              <div className="space-y-2">
+                {Object.keys(tables).map((tableName) => (
+                  <div key={tableName} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={tableName}
+                      checked={selectedTablesForDeletion.includes(tableName)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedTablesForDeletion((prev) => [
+                            ...prev,
+                            tableName,
+                          ]);
+                        } else {
+                          setSelectedTablesForDeletion((prev) =>
+                            prev.filter((table) => table !== tableName)
+                          );
+                        }
+                      }}
+                    />
+                    <Label htmlFor={tableName}>{tableName}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseModal}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setConfirmDeleteModalOpen(true);
+                  setDeleteModalOpen(false);
+                }}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
+        {/* Confirm Delete Modal */}
+        <Dialog
+          open={confirmDeleteModalOpen}
+          onOpenChange={setConfirmDeleteModalOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p>
+                Are you sure you want to delete the following tables? This
+                action cannot be undone:
+              </p>
+              <ul className="list-disc list-inside">
+                {selectedTablesForDeletion.map((tableName) => (
+                  <li key={tableName}>{tableName}</li>
+                ))}
+              </ul>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDeleteModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteTables();
+                  setConfirmDeleteModalOpen(false);
+                }}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <AnimatePresence>
+
           {currentTable && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -137,12 +357,14 @@ export function EnhancedInputForm() {
                       <Input
                         id="columnName"
                         type="text"
-                        placeholder="Enter column name"
+                        placeholder="Enter column names seperated by commas, e.g., First name, Last name, Age, etc"
                         value={columnName}
                         onChange={(e) => setColumnName(e.target.value)}
                       />
                     </div>
-                    <Button onClick={addColumn} className="mt-6">Add Column</Button>
+                    <Button onClick={addColumns} className="mt-6">
+                      Add Column
+                    </Button>
                   </div>
 
                   <div className="space-y-2">
@@ -157,7 +379,7 @@ export function EnhancedInputForm() {
                           onChange={(e) =>
                             setRowData({ ...rowData, [col]: e.target.value })
                           }
-                          aria-label={`Enter value for ${col}`}
+                          aria-label={`Enter value in ${col}`}
                         />
                       ))}
                     </div>
@@ -165,7 +387,9 @@ export function EnhancedInputForm() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Table Preview</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Table Preview
+                    </h3>
                     <div className="border rounded-md overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -179,7 +403,9 @@ export function EnhancedInputForm() {
                           {tables[currentTable]?.rows.map((row, rowIndex) => (
                             <TableRow key={rowIndex}>
                               {tables[currentTable]?.columns.map((col) => (
-                                <TableCell key={col}>{row[col] || ""}</TableCell>
+                                <TableCell key={col}>
+                                  {row[col] || ""}
+                                </TableCell>
                               ))}
                             </TableRow>
                           ))}
@@ -195,6 +421,5 @@ export function EnhancedInputForm() {
       </div>
       <Toaster />
     </>
-  )
+  );
 }
-
