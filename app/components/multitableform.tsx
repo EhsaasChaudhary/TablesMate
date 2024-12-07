@@ -231,16 +231,6 @@ export function EnhancedInputForm() {
     setSelectedTablesForDeletion([]);
   };
 
-  // const openEditModal = () => {
-  //   setEditedTableNames(
-  //     Object.keys(tables).reduce((acc, table) => {
-  //       acc[table] = table;
-  //       return acc;
-  //     }, {} as Record<string, string>)
-  //   );
-  //   setEditModalOpen(true);
-  // };
-
   return (
     <>
       <div className="container mx-auto p-4 space-y-8">
@@ -441,6 +431,9 @@ export function EnhancedInputForm() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
+      {/* this is the start of columns and data table section */}
 
         <AnimatePresence>
           {currentTable && (
