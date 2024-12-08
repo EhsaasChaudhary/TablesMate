@@ -229,37 +229,44 @@ export function EnhancedInputForm() {
   };
 
   const saveColumnChanges = () => {
-    if (!currentTable) return;
-
-    const updatedColumns = editedColumns.map(
-      (col, i) => col || tables[currentTable].columns[i]
-    );
-
-    // Check for unique column names
-    if (new Set(updatedColumns).size !== updatedColumns.length) {
-      toast({
-        title: "Error",
-        description: "Column names must be unique.",
-        variant: "destructive",
+    if (currentTable) {
+      const oldColumns = tables[currentTable].columns; // Original column names
+      const columnMapping = oldColumns.reduce<Record<string, string>>(
+        (acc, col, index) => {
+          acc[col] = editedColumns[index] || col; // Map old to new or keep the same
+          return acc;
+        },
+        {}
+      );
+  
+      // Update table with new column names and updated rows
+      setTables((prevTables) => {
+        const updatedRows = prevTables[currentTable].rows.map((row) =>
+          Object.keys(row).reduce<Record<string, string>>((updatedRow, key) => {
+            const newKey = columnMapping[key] || key; // Get new column name
+            updatedRow[newKey] = row[key]; // Preserve data
+            return updatedRow;
+          }, {})
+        );
+  
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            columns: editedColumns, // Save the new column names
+            rows: updatedRows, // Update rows with new column names
+          },
+        };
       });
-      return;
+  
+      toast({
+        title: "Success",
+        description: "Columns updated successfully.",
+      });
+      setEditColumnsModalOpen(false);
     }
-
-    setTables((prevTables) => {
-      const updatedTable = {
-        ...prevTables[currentTable],
-        columns: updatedColumns,
-      };
-      return { ...prevTables, [currentTable]: updatedTable };
-    });
-
-    toast({
-      title: "Success",
-      description: "Column names have been updated successfully.",
-    });
-
-    setEditColumnsModalOpen(false); // Close the modal
   };
+  
 
   const deleteColumn = (col: string) => {
     if (!currentTable) {
