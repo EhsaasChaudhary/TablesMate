@@ -70,39 +70,292 @@ export function EnhancedInputForm() {
   const { toast } = useToast();
 
   const addNewTables = () => {
-    // some function logic
+    if (!newTableName) {
+      toast({
+        title: "Error",
+        description:
+          "Please enter one or more table names separated by commas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTableNames = newTableName
+      .split(",")
+      .map((table) => table.trim())
+      .filter((table) => table && !tables[table]); // Ensure non-empty and unique table names
+
+    if (newTableNames.length > 0) {
+      setTables((prevTables) => {
+        const updatedTables = { ...prevTables };
+        newTableNames.forEach((table) => {
+          updatedTables[table] = { columns: [], rows: [] };
+        });
+        return updatedTables;
+      });
+
+      toast({
+        title: "Tables Created",
+        description: `New tables "${newTableNames.join(
+          ", "
+        )}" have been created successfully.`,
+      });
+      setNewTableName(""); // Clear the input field
+      setCurrentTable(newTableNames[0]); // Set the first new table as current
+    } else {
+      toast({
+        title: "Error",
+        description: "Please enter unique table names.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteTables = () => {
-    // some function logic
+    setTables((prevTables) => {
+      const updatedTables = { ...prevTables };
+      selectedTablesForDeletion.forEach((tableName) => {
+        delete updatedTables[tableName];
+      });
+      return updatedTables;
+    });
+
+    // Clear selection and show toast
+    setSelectedTablesForDeletion([]);
+    toast({
+      title: "Tables Deleted",
+      description: `The tables "${selectedTablesForDeletion.join(
+        ", "
+      )}" were successfully deleted.`,
+    });
+
+    // Reset current table if it was deleted
+    if (selectedTablesForDeletion.includes(currentTable)) {
+      setCurrentTable("");
+    }
   };
 
   const handleSaveTableEdits = () => {
-    // some function logic
+    const newTableNames = Object.values(editedTableNames);
+
+    // Check for duplicate or empty names
+    const hasDuplicates = new Set(newTableNames).size !== newTableNames.length;
+    const hasEmptyNames = newTableNames.some((name) => !name.trim());
+
+    if (hasDuplicates || hasEmptyNames) {
+      toast({
+        title: "Error",
+        description:
+          "Table names must be unique and non-empty. Please fix the errors and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTables: Record<string, TableData> = {};
+      Object.entries(prevTables).forEach(([oldName, data]) => {
+        const newName = editedTableNames[oldName];
+        updatedTables[newName] = data;
+      });
+      return updatedTables;
+    });
+
+    // Update the current table if its name was changed
+    if (editedTableNames[currentTable]) {
+      setCurrentTable(editedTableNames[currentTable]);
+    }
+
+    toast({
+      title: "Changes Saved",
+      description: "Table names have been updated successfully.",
+    });
   };
 
   const addColumns = () => {
-    // some function logic
+    if (!currentTable) {
+      toast({
+        title: "Error",
+        description: "Please select a table to add columns.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!columnName) {
+      toast({
+        title: "Error",
+        description:
+          "Please enter one or more column names separated by commas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newColumns = columnName
+      .split(",")
+      .map((col) => col.trim())
+      .filter((col) => col && !tables[currentTable].columns.includes(col)); // Ensure non-empty and unique column names
+
+    if (newColumns.length > 0) {
+      setTables((prevTables) => {
+        const updatedTable = { ...prevTables[currentTable] };
+
+        // If there are no existing columns, clear the rows
+        if (updatedTable.columns.length === 0) {
+          updatedTable.rows = [];
+        }
+
+        // Add the new columns
+        updatedTable.columns = [...updatedTable.columns, ...newColumns];
+
+        return { ...prevTables, [currentTable]: updatedTable };
+      });
+
+      toast({
+        title: "Columns Added",
+        description: `New columns "${newColumns.join(
+          ", "
+        )}" have been added to "${currentTable}".`,
+      });
+      setColumnName(""); // Clear the input field
+    } else {
+      toast({
+        title: "Error",
+        description: "Please enter unique column names.",
+        variant: "destructive",
+      });
+    }
   };
 
   const saveColumnChanges = () => {
-    // some function logic
+    if (currentTable) {
+      const oldColumns = tables[currentTable].columns; // Original column names
+      const columnMapping = oldColumns.reduce<Record<string, string>>(
+        (acc, col, index) => {
+          acc[col] = editedColumns[index] || col; // Map old to new or keep the same
+          return acc;
+        },
+        {}
+      );
+
+      // Update table with new column names and updated rows
+      setTables((prevTables) => {
+        const updatedRows = prevTables[currentTable].rows.map((row) =>
+          Object.keys(row).reduce<Record<string, string>>((updatedRow, key) => {
+            const newKey = columnMapping[key] || key; // Get new column name
+            updatedRow[newKey] = row[key]; // Preserve data
+            return updatedRow;
+          }, {})
+        );
+
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            columns: editedColumns, // Save the new column names
+            rows: updatedRows, // Update rows with new column names
+          },
+        };
+      });
+
+      toast({
+        title: "Success",
+        description: "Columns updated successfully.",
+      });
+      setEditColumnsModalOpen(false);
+    }
   };
 
   const deleteColumn = (col: string) => {
-    // some function logic
+    if (!currentTable) {
+      toast({
+        title: "Error",
+        description: "No table selected to delete columns from.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTable = {
+        ...prevTables[currentTable],
+        columns: prevTables[currentTable].columns.filter(
+          (column) => column !== col
+        ),
+        rows: prevTables[currentTable].rows.map((row) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [col]: _, ...remainingRow } = row; // Remove the column from row data
+          return remainingRow;
+        }),
+      };
+      return { ...prevTables, [currentTable]: updatedTable };
+    });
+
+    toast({
+      title: "Column Deleted",
+      description: `Column "${col}" has been deleted from "${currentTable}".`,
+    });
   };
 
   const addRow = () => {
-    // some function logic
+    if (currentTable) {
+      setTables((prevTables) => {
+        const updatedTable = {
+          ...prevTables[currentTable],
+          rows: [...prevTables[currentTable].rows, { ...rowData }],
+        };
+        return { ...prevTables, [currentTable]: updatedTable };
+      });
+      setRowData({});
+      toast({
+        title: "Row Added",
+        description: `New row has been added to "${currentTable}".`,
+      });
+    }
   };
 
   const confirmDeleteRow = () => {
-   // some function logic
+    if (currentRowIndex !== null && currentTable) {
+      setTables((prevTables) => {
+        const updatedRows = prevTables[currentTable].rows.filter(
+          (_, index) => index !== currentRowIndex
+        );
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            rows: updatedRows,
+          },
+        };
+      });
+      toast({
+        title: "Success",
+        description: "Row has been successfully deleted.",
+      });
+    }
+    setIsDeleteModalOpen(false);
   };
 
   const saveEditedRow = () => {
-    // some function logic
+    if (currentRowIndex !== null && currentTable) {
+      setTables((prevTables) => {
+        const updatedRows = [...prevTables[currentTable].rows];
+        updatedRows[currentRowIndex] = editedRowData;
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            rows: updatedRows,
+          },
+        };
+      });
+      toast({
+        title: "Success",
+        description: "Row data has been successfully updated.",
+      });
+    }
+    setIsEditModalOpen(false);
   };
 
   const handleCloseModal = () => {
