@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -58,6 +59,13 @@ export function EnhancedInputForm() {
 
   const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
   const [editedColumns, setEditedColumns] = useState<string[]>([]);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentRowIndex, setCurrentRowIndex] = useState<number | null>(null);
+  const [editedRowData, setEditedRowData] = useState<Record<string, string>>(
+    {}
+  );
 
   const { toast } = useToast();
 
@@ -300,6 +308,49 @@ export function EnhancedInputForm() {
     }
   };
 
+  const confirmDeleteRow = () => {
+    if (currentRowIndex !== null && currentTable) {
+      setTables((prevTables) => {
+        const updatedRows = prevTables[currentTable].rows.filter(
+          (_, index) => index !== currentRowIndex
+        );
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            rows: updatedRows,
+          },
+        };
+      });
+      toast({
+        title: "Success",
+        description: "Row has been successfully deleted.",
+      });
+    }
+    setIsDeleteModalOpen(false);
+  };
+
+  const saveEditedRow = () => {
+    if (currentRowIndex !== null && currentTable) {
+      setTables((prevTables) => {
+        const updatedRows = [...prevTables[currentTable].rows];
+        updatedRows[currentRowIndex] = editedRowData;
+        return {
+          ...prevTables,
+          [currentTable]: {
+            ...prevTables[currentTable],
+            rows: updatedRows,
+          },
+        };
+      });
+      toast({
+        title: "Success",
+        description: "Row data has been successfully updated.",
+      });
+    }
+    setIsEditModalOpen(false);
+  };
+
   const handleCloseModal = () => {
     setDeleteModalOpen(false);
     setSelectedTablesForDeletion([]);
@@ -313,6 +364,17 @@ export function EnhancedInputForm() {
     });
   };
 
+  const handleDeleteRow = (rowIndex: number) => {
+    setCurrentRowIndex(rowIndex);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleEditRow = (rowIndex: number) => {
+    setCurrentRowIndex(rowIndex);
+    setEditedRowData({ ...tables[currentTable]?.rows[rowIndex] });
+    setIsEditModalOpen(true);
+  };
+
   return (
     <>
       <div className="container mx-auto p-4 space-y-8">
@@ -322,7 +384,7 @@ export function EnhancedInputForm() {
               <CardTitle>Table Management</CardTitle>
               <div className="space-x-2">
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => {
                     setEditedTableNames(
                       Object.fromEntries(
@@ -575,20 +637,23 @@ export function EnhancedInputForm() {
               transition={{ duration: 0.3 }}
             >
               <Card>
-                <CardHeader className="flex justify-between">
-                  <CardTitle>Working on Table: {currentTable}</CardTitle>
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={() => {
-                        if (currentTable) {
-                          setEditedColumns([...tables[currentTable].columns]);
-                          setEditColumnsModalOpen(true);
-                        }
-                      }}
-                      disabled={!currentTable}
-                    >
-                      Edit Columns
-                    </Button>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Working on Table: {currentTable}</CardTitle>
+                    <div className="space-x-2">
+                      <Button
+                        onClick={() => {
+                          if (currentTable) {
+                            setEditedColumns([...tables[currentTable].columns]);
+                            setEditColumnsModalOpen(true);
+                          }
+                        }}
+                        disabled={!currentTable}
+                        variant="outline"
+                      >
+                        Edit Columns
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -640,6 +705,84 @@ export function EnhancedInputForm() {
                     <Button onClick={addRow}>Add Row</Button>
                   </div>
 
+                  {/* table edit modal */}
+                  <Dialog
+                    open={isEditModalOpen}
+                    onOpenChange={setIsEditModalOpen}
+                  >
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Edit Row</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        {tables[currentTable]?.columns.map((col) => (
+                          <div
+                            key={col}
+                            className="grid grid-cols-4 items-center gap-4"
+                          >
+                            <Label
+                              htmlFor={`edit-${col}`}
+                              className="text-right"
+                            >
+                              {col}
+                            </Label>
+                            <Input
+                              id={`edit-${col}`}
+                              value={editedRowData[col] || ""}
+                              onChange={(e) =>
+                                setEditedRowData((prev) => ({
+                                  ...prev,
+                                  [col]: e.target.value,
+                                }))
+                              }
+                              className="col-span-3"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsEditModalOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={saveEditedRow}>Save changes</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* table delete modal */}
+
+                  <Dialog
+                    open={isDeleteModalOpen}
+                    onOpenChange={setIsDeleteModalOpen}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Confirm Delete</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete this row? This action
+                          cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="sm:justify-start">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsDeleteModalOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={confirmDeleteRow}
+                        >
+                          Delete
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
                       Table Preview
@@ -648,19 +791,40 @@ export function EnhancedInputForm() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[100px]">Count</TableHead>
                             {tables[currentTable]?.columns.map((col) => (
                               <TableHead key={col}>{col}</TableHead>
                             ))}
+                            <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {tables[currentTable]?.rows.map((row, rowIndex) => (
                             <TableRow key={rowIndex}>
+                              <TableCell className="font-medium">
+                                {rowIndex + 1}
+                              </TableCell>
                               {tables[currentTable]?.columns.map((col) => (
                                 <TableCell key={col}>
                                   {row[col] || ""}
                                 </TableCell>
                               ))}
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => handleEditRow(rowIndex)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => handleDeleteRow(rowIndex)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
