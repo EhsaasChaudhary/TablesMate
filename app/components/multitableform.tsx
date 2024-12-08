@@ -285,6 +285,7 @@ export function EnhancedInputForm() {
           (column) => column !== col
         ),
         rows: prevTables[currentTable].rows.map((row) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [col]: _, ...remainingRow } = row; // Remove the column from row data
           return remainingRow;
         }),
