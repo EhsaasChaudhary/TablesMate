@@ -238,7 +238,7 @@ export function EnhancedInputForm() {
         },
         {}
       );
-  
+
       // Update table with new column names and updated rows
       setTables((prevTables) => {
         const updatedRows = prevTables[currentTable].rows.map((row) =>
@@ -248,7 +248,7 @@ export function EnhancedInputForm() {
             return updatedRow;
           }, {})
         );
-  
+
         return {
           ...prevTables,
           [currentTable]: {
@@ -258,7 +258,7 @@ export function EnhancedInputForm() {
           },
         };
       });
-  
+
       toast({
         title: "Success",
         description: "Columns updated successfully.",
@@ -266,7 +266,6 @@ export function EnhancedInputForm() {
       setEditColumnsModalOpen(false);
     }
   };
-  
 
   const deleteColumn = (col: string) => {
     if (!currentTable) {
