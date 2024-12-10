@@ -52,9 +52,6 @@ export function EnhancedInputForm() {
   const { tables, setTables } = context;
   const { currentTable, setCurrentTable } = context;
 
-
-  // const [tables, setTables] = useState<Record<string, TableData>>({});
-  // const [currentTable, setCurrentTable] = useState<string>("");
   const [newTableName, setNewTableName] = useState<string>("");
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
