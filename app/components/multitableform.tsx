@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,15 +32,29 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { TableStateContext } from "@/app/layout";
 
 interface TableData {
   columns: string[];
   rows: Record<string, string>[];
 }
 
+
+
 export function EnhancedInputForm() {
-  const [tables, setTables] = useState<Record<string, TableData>>({});
-  const [currentTable, setCurrentTable] = useState<string>("");
+
+  const context = useContext(TableStateContext);
+
+  if (!context) {
+    throw new Error("TableComponent must be used within a TableStateContext.Provider");
+  }
+
+  const { tables, setTables } = context;
+  const { currentTable, setCurrentTable } = context;
+
+
+  // const [tables, setTables] = useState<Record<string, TableData>>({});
+  // const [currentTable, setCurrentTable] = useState<string>("");
   const [newTableName, setNewTableName] = useState<string>("");
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
