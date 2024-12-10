@@ -31,7 +31,9 @@ interface TableStateContextType {
 }
 
 // Context
-export const TableStateContext = createContext<TableStateContextType | undefined>(undefined);
+export const TableStateContext = createContext<
+  TableStateContextType | undefined
+>(undefined);
 
 export default function RootLayout({
   children,
@@ -55,7 +57,9 @@ export default function RootLayout({
   useEffect(() => {
     async function loadState() {
       try {
-        const savedState = await getFromIndexedDB<Record<string, TableData>>("TableState");
+        const savedState = await getFromIndexedDB<Record<string, TableData>>(
+          "TableState"
+        );
         if (savedState) {
           setTables(savedState);
           const firstTableName = Object.keys(savedState)[0];
@@ -73,12 +77,16 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <TableStateContext.Provider value={{ tables, setTables, currentTable, setCurrentTable }}>
+    <TableStateContext.Provider
+      value={{ tables, setTables, currentTable, setCurrentTable }}
+    >
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
           {children}
-        </TableStateContext.Provider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </TableStateContext.Provider>
   );
 }
