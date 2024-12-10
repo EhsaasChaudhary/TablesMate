@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { TableStateContext } from "@/app/layout";
+import { TableStateContext } from "./idbprovider";
 
 interface TableData {
   columns: string[];
