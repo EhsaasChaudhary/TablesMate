@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -42,20 +42,20 @@ export function EnhancedInputForm() {
   const [tables, setTables] = useState<Record<string, TableData>>({});
   const [currentTable, setCurrentTable] = useState<string>("");
   const [newTableName, setNewTableName] = useState<string>("");
+  const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
+    string[]
+  >([]);
+  const [editedTableNames, setEditedTableNames] = useState<
+    Record<string, string>
+  >({});
 
   const [columnName, setColumnName] = useState<string>("");
   const [rowData, setRowData] = useState<Record<string, string>>({});
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
-  const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
-    string[]
-  >([]);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editedTableNames, setEditedTableNames] = useState<
-    Record<string, string>
-  >({});
 
   const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
   const [editedColumns, setEditedColumns] = useState<string[]>([]);
