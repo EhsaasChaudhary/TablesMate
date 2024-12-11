@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Edit, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -38,10 +39,10 @@ export default function Tablespace() {
     throw new Error("Context Not found reload the App");
   }
 
-  const { tables, setTables } = context;  
+  const { tables, setTables } = context;
   const { currentTable, setCurrentTable } = context;
 
-// this is states for table
+  // this is states for table
 
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -54,12 +55,11 @@ export default function Tablespace() {
     Record<string, string>
   >({});
 
-// this is states for columns
+  // this is states for columns
 
-const [columnName, setColumnName] = useState<string>("");
-const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
-const [editedColumns, setEditedColumns] = useState<string[]>([]);
-
+  const [columnName, setColumnName] = useState<string>("");
+  const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
+  const [editedColumns, setEditedColumns] = useState<string[]>([]);
 
   const { toast } = useToast();
 
@@ -264,37 +264,6 @@ const [editedColumns, setEditedColumns] = useState<string[]>([]);
     }
   };
 
-//   const deleteColumn = (col: string) => {
-//     if (!currentTable) {
-//       toast({
-//         title: "Error",
-//         description: "No table selected to delete columns from.",
-//         variant: "destructive",
-//       });
-//       return;
-//     }
-
-//     setTables((prevTables) => {
-//       const updatedTable = {
-//         ...prevTables[currentTable],
-//         columns: prevTables[currentTable].columns.filter(
-//           (column) => column !== col
-//         ),
-//         rows: prevTables[currentTable].rows.map((row) => {
-//           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//           const { [col]: _, ...remainingRow } = row; // Remove the column from row data
-//           return remainingRow;
-//         }),
-//       };
-//       return { ...prevTables, [currentTable]: updatedTable };
-//     });
-
-//     toast({
-//       title: "Column Deleted",
-//       description: `Column "${col}" has been deleted from "${currentTable}".`,
-//     });
-//   };
-
   const handleCloseModal = () => {
     setDeleteModalOpen(false);
     setSelectedTablesForDeletion([]);
@@ -310,15 +279,15 @@ const [editedColumns, setEditedColumns] = useState<string[]>([]);
 
   return (
     <>
-      <div className="container mx-auto p-4 space-y-8">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Table Management</CardTitle>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
+     <div className="w-full max-w-8xl mx-auto space-y-6">
+      <Card className="bg-card">
+        <CardHeader className="border-b">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <CardTitle className="text-2xl font-bold text-primary">Table Management</CardTitle>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
                     setEditedTableNames(
                       Object.fromEntries(
                         Object.keys(tables).map((table) => [table, table])
@@ -326,53 +295,112 @@ const [editedColumns, setEditedColumns] = useState<string[]>([]);
                     );
                     setEditModalOpen(true);
                   }}
-                >
-                  Edit Tables
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setDeleteModalOpen(true)}
-                >
-                  Delete Table
-                </Button>
-              </div>
+                className="w-full sm:w-auto"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Tables
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteModalOpen(true)}
+                className="w-full sm:w-auto mt-2 sm:mt-0"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Table
+              </Button>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Add New Table */}
-            <div className="flex space-x-2">
-              <div className="flex-grow">
-                <Label htmlFor="newTableName">New Table Name</Label>
-                <Input
-                  id="newTableName"
-                  type="text"
-                  placeholder="Enter table names separated by commas, e.g., Users, Orders, etc"
-                  value={newTableName}
-                  onChange={(e) => setNewTableName(e.target.value)}
-                />
-              </div>
-              <Button onClick={addNewTables} className="mt-6">
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="space-y-4">
+            <Label htmlFor="newTableName" className="text-sm font-medium">New Table Name</Label>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <Input
+                id="newTableName"
+                type="text"
+                placeholder="Enter table names separated by commas"
+                value={newTableName}
+                onChange={(e) => setNewTableName(e.target.value)}
+                className="flex-grow"
+              />
+              <Button onClick={addNewTables} className="w-full sm:w-auto">
+                <Plus className="w-4 h-4 mr-2" />
                 Add Table
               </Button>
             </div>
-            {/* Select Table */}
-            <div>
-              <Label htmlFor="tableSelect">Select Table</Label>
-              <Select value={currentTable} onValueChange={setCurrentTable}>
-                <SelectTrigger id="tableSelect">
-                  <SelectValue placeholder="Select a table" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(tables).map((tableName) => (
-                    <SelectItem key={tableName} value={tableName}>
-                      {tableName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="space-y-4">
+            <Label htmlFor="tableSelect" className="text-sm font-medium">Select Table</Label>
+            <Select value={currentTable} onValueChange={setCurrentTable}>
+              <SelectTrigger id="tableSelect" className="w-full">
+                <SelectValue placeholder="Select a table" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(tables).map((tableName) => (
+                  <SelectItem key={tableName} value={tableName}>
+                    {tableName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AnimatePresence>
+        {currentTable && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-card">
+              <CardHeader className="border-b">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                  <CardTitle className="text-xl font-semibold text-primary">
+                    Working on Table: {currentTable}
+                  </CardTitle>
+                  <Button
+                    onClick={() => {
+                        if (currentTable) {
+                          setEditedColumns([...tables[currentTable].columns]);
+                          setEditColumnsModalOpen(true);
+                        }
+                      }}
+                    disabled={!currentTable}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Columns
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="space-y-4">
+                  <Label htmlFor="columnName" className="text-sm font-medium">Column Name</Label>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <Input
+                      id="columnName"
+                      type="text"
+                      placeholder="Enter column names separated by commas"
+                      value={columnName}
+                      onChange={(e) => setColumnName(e.target.value)}
+                      className="flex-grow"
+                    />
+                    <Button onClick={addColumns} className="w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Column
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
 
         {/* modals start here */}
 
@@ -516,105 +544,51 @@ const [editedColumns, setEditedColumns] = useState<string[]>([]);
           </DialogContent>
         </Dialog>
 
-        <AnimatePresence>
-          {currentTable && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Working on Table: {currentTable}</CardTitle>
-                    <div className="space-x-2">
-                      <Button
-                        onClick={() => {
-                          if (currentTable) {
-                            setEditedColumns([...tables[currentTable].columns]);
-                            setEditColumnsModalOpen(true);
-                          }
-                        }}
-                        disabled={!currentTable}
-                        variant="outline"
-                      >
-                        Edit Columns
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex space-x-2">
-                    <div className="flex-grow">
-                      <Label htmlFor="columnName">Column Name</Label>
-                      <Input
-                        id="columnName"
-                        type="text"
-                        placeholder="Enter column names seperated by commas, e.g., First name, Last name, Age, etc"
-                        value={columnName}
-                        onChange={(e) => setColumnName(e.target.value)}
-                      />
-                    </div>
-                    <Button onClick={addColumns} className="mt-6">
-                      Add Column
-                    </Button>
-                  </div>
-
-                  {/* Edit Columns */}
-                  <Dialog
-                    open={editColumnsModalOpen}
-                    onOpenChange={setEditColumnsModalOpen}
-                  >
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Columns</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        {editedColumns.map((col, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-2"
-                          >
-                            <Label htmlFor={`col-${index}`} className="w-24">
-                              Column {index + 1}
-                            </Label>
-                            <Input
-                              id={`col-${index}`}
-                              type="text"
-                              value={col}
-                              onChange={(e) =>
-                                handleColumnNameChange(index, e.target.value)
-                              }
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditColumnsModalOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="default"
-                          onClick={() => {
-                            saveColumnChanges();
-                            setEditColumnsModalOpen(false);
-                          }}
-                        >
-                          Save Changes
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+        {/* Edit Columns */}
+        <Dialog
+          open={editColumnsModalOpen}
+          onOpenChange={setEditColumnsModalOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Columns</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {editedColumns.map((col, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <Label htmlFor={`col-${index}`} className="w-24">
+                    Column {index + 1}
+                  </Label>
+                  <Input
+                    id={`col-${index}`}
+                    type="text"
+                    value={col}
+                    onChange={(e) =>
+                      handleColumnNameChange(index, e.target.value)
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setEditColumnsModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => {
+                  saveColumnChanges();
+                  setEditColumnsModalOpen(false);
+                }}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       <Toaster />
     </>
   );

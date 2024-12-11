@@ -689,6 +689,7 @@ export function EnhancedInputForm() {
                     </Button>
                   </div>
 
+                  {/* this is row and table */}
                   <div className="space-y-2">
                     <Label>Add Row</Label>
                     <div className="flex flex-wrap gap-2">
@@ -721,7 +722,7 @@ export function EnhancedInputForm() {
                     <Button onClick={addRow}>Add Row</Button>
                   </div>
 
-                  {/* table edit modal */}
+                  {/* table row edit modal */}
                   <Dialog
                     open={isEditModalOpen}
                     onOpenChange={setIsEditModalOpen}
@@ -768,7 +769,7 @@ export function EnhancedInputForm() {
                     </DialogContent>
                   </Dialog>
 
-                  {/* table delete modal */}
+                  {/* table row delete modal */}
 
                   <Dialog
                     open={isDeleteModalOpen}
