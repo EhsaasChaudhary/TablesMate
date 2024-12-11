@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -22,33 +21,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { TableStateContext } from "./idbprovider";
+import { TableStateContext } from "../components/idbprovider";
 
 interface TableData {
   columns: string[];
   rows: Record<string, string>[];
 }
 
-export function EnhancedInputForm() {
+export default function Tablespace() {
   const context = useContext(TableStateContext);
 
   if (!context) {
     throw new Error("Context Not found reload the App");
   }
 
-  const { tables, setTables } = context;
+  const { tables, setTables } = context;  
   const { currentTable, setCurrentTable } = context;
 
+// this is states for table
+
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [newTableName, setNewTableName] = useState<string>("");
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
@@ -57,26 +54,16 @@ export function EnhancedInputForm() {
     Record<string, string>
   >({});
 
-  const [columnName, setColumnName] = useState<string>("");
-  const [rowData, setRowData] = useState<Record<string, string>>({});
+// this is states for columns
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
+const [columnName, setColumnName] = useState<string>("");
+const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
+const [editedColumns, setEditedColumns] = useState<string[]>([]);
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
-
-  const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
-  const [editedColumns, setEditedColumns] = useState<string[]>([]);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentRowIndex, setCurrentRowIndex] = useState<number | null>(null);
-  const [editedRowData, setEditedRowData] = useState<Record<string, string>>(
-    {}
-  );
 
   const { toast } = useToast();
 
+  //   this is function start for table
   const addNewTables = () => {
     if (!newTableName) {
       toast({
@@ -180,6 +167,8 @@ export function EnhancedInputForm() {
     });
   };
 
+  //   this is function start for columns
+
   const addColumns = () => {
     if (!currentTable) {
       toast({
@@ -275,96 +264,36 @@ export function EnhancedInputForm() {
     }
   };
 
-  const deleteColumn = (col: string) => {
-    if (!currentTable) {
-      toast({
-        title: "Error",
-        description: "No table selected to delete columns from.",
-        variant: "destructive",
-      });
-      return;
-    }
+//   const deleteColumn = (col: string) => {
+//     if (!currentTable) {
+//       toast({
+//         title: "Error",
+//         description: "No table selected to delete columns from.",
+//         variant: "destructive",
+//       });
+//       return;
+//     }
 
-    setTables((prevTables) => {
-      const updatedTable = {
-        ...prevTables[currentTable],
-        columns: prevTables[currentTable].columns.filter(
-          (column) => column !== col
-        ),
-        rows: prevTables[currentTable].rows.map((row) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [col]: _, ...remainingRow } = row; // Remove the column from row data
-          return remainingRow;
-        }),
-      };
-      return { ...prevTables, [currentTable]: updatedTable };
-    });
+//     setTables((prevTables) => {
+//       const updatedTable = {
+//         ...prevTables[currentTable],
+//         columns: prevTables[currentTable].columns.filter(
+//           (column) => column !== col
+//         ),
+//         rows: prevTables[currentTable].rows.map((row) => {
+//           // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//           const { [col]: _, ...remainingRow } = row; // Remove the column from row data
+//           return remainingRow;
+//         }),
+//       };
+//       return { ...prevTables, [currentTable]: updatedTable };
+//     });
 
-    toast({
-      title: "Column Deleted",
-      description: `Column "${col}" has been deleted from "${currentTable}".`,
-    });
-  };
-
-  const addRow = () => {
-    if (currentTable) {
-      setTables((prevTables) => {
-        const updatedTable = {
-          ...prevTables[currentTable],
-          rows: [...prevTables[currentTable].rows, { ...rowData }],
-        };
-        return { ...prevTables, [currentTable]: updatedTable };
-      });
-      setRowData({});
-      toast({
-        title: "Row Added",
-        description: `New row has been added to "${currentTable}".`,
-      });
-    }
-  };
-
-  const confirmDeleteRow = () => {
-    if (currentRowIndex !== null && currentTable) {
-      setTables((prevTables) => {
-        const updatedRows = prevTables[currentTable].rows.filter(
-          (_, index) => index !== currentRowIndex
-        );
-        return {
-          ...prevTables,
-          [currentTable]: {
-            ...prevTables[currentTable],
-            rows: updatedRows,
-          },
-        };
-      });
-      toast({
-        title: "Success",
-        description: "Row has been successfully deleted.",
-      });
-    }
-    setIsDeleteModalOpen(false);
-  };
-
-  const saveEditedRow = () => {
-    if (currentRowIndex !== null && currentTable) {
-      setTables((prevTables) => {
-        const updatedRows = [...prevTables[currentTable].rows];
-        updatedRows[currentRowIndex] = editedRowData;
-        return {
-          ...prevTables,
-          [currentTable]: {
-            ...prevTables[currentTable],
-            rows: updatedRows,
-          },
-        };
-      });
-      toast({
-        title: "Success",
-        description: "Row data has been successfully updated.",
-      });
-    }
-    setIsEditModalOpen(false);
-  };
+//     toast({
+//       title: "Column Deleted",
+//       description: `Column "${col}" has been deleted from "${currentTable}".`,
+//     });
+//   };
 
   const handleCloseModal = () => {
     setDeleteModalOpen(false);
@@ -377,17 +306,6 @@ export function EnhancedInputForm() {
       updated[index] = newName;
       return updated;
     });
-  };
-
-  const handleDeleteRow = (rowIndex: number) => {
-    setCurrentRowIndex(rowIndex);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleEditRow = (rowIndex: number) => {
-    setCurrentRowIndex(rowIndex);
-    setEditedRowData({ ...tables[currentTable]?.rows[rowIndex] });
-    setIsEditModalOpen(true);
   };
 
   return (
@@ -455,6 +373,8 @@ export function EnhancedInputForm() {
             </div>
           </CardContent>
         </Card>
+
+        {/* modals start here */}
 
         {/* Delete Modal */}
         <Dialog
@@ -596,54 +516,6 @@ export function EnhancedInputForm() {
           </DialogContent>
         </Dialog>
 
-        {/* this is the start of columns and data table section */}
-
-        {/* Edit Columns */}
-        <Dialog
-          open={editColumnsModalOpen}
-          onOpenChange={setEditColumnsModalOpen}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Columns</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              {editedColumns.map((col, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Label htmlFor={`col-${index}`} className="w-24">
-                    Column {index + 1}
-                  </Label>
-                  <Input
-                    id={`col-${index}`}
-                    type="text"
-                    value={col}
-                    onChange={(e) =>
-                      handleColumnNameChange(index, e.target.value)
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setEditColumnsModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={() => {
-                  saveColumnChanges();
-                  setEditColumnsModalOpen(false);
-                }}
-              >
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
         <AnimatePresence>
           {currentTable && (
             <motion.div
@@ -689,69 +561,31 @@ export function EnhancedInputForm() {
                     </Button>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Add Row</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {tables[currentTable]?.columns.map((col) => (
-                        <div
-                          key={col}
-                          className="flex items-center space-x-2 w-full sm:max-w-[calc(33%-8px)]"
-                        >
-                          <Input
-                            type="text"
-                            className="w-full"
-                            placeholder={col}
-                            value={rowData[col] || ""}
-                            onChange={(e) =>
-                              setRowData({ ...rowData, [col]: e.target.value })
-                            }
-                            aria-label={`Enter value in ${col}`}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteColumn(col)}
-                            aria-label={`Delete column ${col}`}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button onClick={addRow}>Add Row</Button>
-                  </div>
-
-                  {/* table edit modal */}
+                  {/* Edit Columns */}
                   <Dialog
-                    open={isEditModalOpen}
-                    onOpenChange={setIsEditModalOpen}
+                    open={editColumnsModalOpen}
+                    onOpenChange={setEditColumnsModalOpen}
                   >
-                    <DialogContent className="sm:max-w-[425px]">
+                    <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Edit Row</DialogTitle>
+                        <DialogTitle>Edit Columns</DialogTitle>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        {tables[currentTable]?.columns.map((col) => (
+                      <div className="space-y-4">
+                        {editedColumns.map((col, index) => (
                           <div
-                            key={col}
-                            className="grid grid-cols-4 items-center gap-4"
+                            key={index}
+                            className="flex items-center space-x-2"
                           >
-                            <Label
-                              htmlFor={`edit-${col}`}
-                              className="text-right"
-                            >
-                              {col}
+                            <Label htmlFor={`col-${index}`} className="w-24">
+                              Column {index + 1}
                             </Label>
                             <Input
-                              id={`edit-${col}`}
-                              value={editedRowData[col] || ""}
+                              id={`col-${index}`}
+                              type="text"
+                              value={col}
                               onChange={(e) =>
-                                setEditedRowData((prev) => ({
-                                  ...prev,
-                                  [col]: e.target.value,
-                                }))
+                                handleColumnNameChange(index, e.target.value)
                               }
-                              className="col-span-3"
                             />
                           </div>
                         ))}
@@ -759,94 +593,22 @@ export function EnhancedInputForm() {
                       <DialogFooter>
                         <Button
                           variant="outline"
-                          onClick={() => setIsEditModalOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={saveEditedRow}>Save changes</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-
-                  {/* table delete modal */}
-
-                  <Dialog
-                    open={isDeleteModalOpen}
-                    onOpenChange={setIsDeleteModalOpen}
-                  >
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Confirm Delete</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to delete this row? This action
-                          cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="sm:justify-start">
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsDeleteModalOpen(false)}
+                          onClick={() => setEditColumnsModalOpen(false)}
                         >
                           Cancel
                         </Button>
                         <Button
-                          variant="destructive"
-                          onClick={confirmDeleteRow}
+                          variant="default"
+                          onClick={() => {
+                            saveColumnChanges();
+                            setEditColumnsModalOpen(false);
+                          }}
                         >
-                          Delete
+                          Save Changes
                         </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      Table Preview
-                    </h3>
-                    <div className="border rounded-md overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[100px]">Count</TableHead>
-                            {tables[currentTable]?.columns.map((col) => (
-                              <TableHead key={col}>{col}</TableHead>
-                            ))}
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {tables[currentTable]?.rows.map((row, rowIndex) => (
-                            <TableRow key={rowIndex}>
-                              <TableCell className="font-medium">
-                                {rowIndex + 1}
-                              </TableCell>
-                              {tables[currentTable]?.columns.map((col) => (
-                                <TableCell key={col}>
-                                  {row[col] || ""}
-                                </TableCell>
-                              ))}
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => handleEditRow(rowIndex)}
-                                  >
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => handleDeleteRow(rowIndex)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </motion.div>
