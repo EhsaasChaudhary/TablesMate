@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, FileSpreadsheet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -415,6 +415,12 @@ export default function Tablespace() {
                 <CardHeader className="border-b">
                   <CardTitle className="text-xl font-semibold text-primary">
                     Columns in {currentTable}
+                    <Button variant="outline" className="ml-14" asChild>
+                      <a href="/DataWorkspace">
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                        Add Data
+                      </a>
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
