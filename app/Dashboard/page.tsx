@@ -28,7 +28,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Database, TableIcon, Columns, Rows, FileSpreadsheet, Table2 } from "lucide-react";
+import {
+  Database,
+  TableIcon,
+  Columns,
+  Rows,
+  FileSpreadsheet,
+  Table2,
+} from "lucide-react";
 import { TableStateContext } from "../components/idbprovider";
 import { Button } from "@/components/ui/button";
 
@@ -253,8 +260,10 @@ export default function Dashboard() {
           <CardTitle>Table-Specific Statistics</CardTitle>
         </CardHeader>
         <CardContent>
-
-          <Select onValueChange={setSelectedTable} value={selectedTable || undefined}>
+          <Select
+            onValueChange={setSelectedTable}
+            value={selectedTable || undefined}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a table" />
             </SelectTrigger>

@@ -295,7 +295,6 @@ export default function Dataspace() {
                 </div>
               </CardContent>
             </Card>
-
           </motion.div>
         )}
       </AnimatePresence>

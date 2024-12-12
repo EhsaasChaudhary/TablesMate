@@ -17,7 +17,7 @@ interface TableStateContextType {
 }
 
 // Context
-export const TableStateContext = createContext< 
+export const TableStateContext = createContext<
   TableStateContextType | undefined
 >(undefined);
 
