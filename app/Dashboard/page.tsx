@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   PieChart,
   Pie,
@@ -37,7 +38,6 @@ import {
   Table2,
 } from "lucide-react";
 import { TableStateContext } from "../components/idbprovider";
-import { Button } from "@/components/ui/button";
 
 const COLORS = [
   "#0088FE",
