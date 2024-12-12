@@ -163,9 +163,9 @@ export default function Dataspace() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="w-full mb-4 max-w-8xl mx-auto"
+            className="w-full p-4 max-w-8xl mx-auto"
           >
-            <Card className="bg-card shadow-lg">
+            <Card className="bg-card h-screen shadow-lg">
               <CardHeader className="border-b">
                 <CardTitle className="text-2xl font-bold text-primary">
                   Data Table Manager
@@ -295,6 +295,7 @@ export default function Dataspace() {
                 </div>
               </CardContent>
             </Card>
+
           </motion.div>
         )}
       </AnimatePresence>
