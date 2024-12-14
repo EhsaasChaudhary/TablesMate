@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { TableStateContext } from "../components/idbprovider";
+import Link from "next/link";
 
 interface TableData {
   columns: string[];
@@ -109,29 +110,26 @@ export default function Tablespace() {
   const handleDeleteTables = () => {
     setTables((prevTables) => {
       const updatedTables = { ...prevTables };
-  
-      // Delete selected tables
       selectedTablesForDeletion.forEach((tableName) => {
         delete updatedTables[tableName];
       });
-  
-      // Reset `currentTable` if it was deleted
-      if (selectedTablesForDeletion.includes(currentTable)) {
-        const remainingTables = Object.keys(updatedTables);
-        setCurrentTable(remainingTables[0] || ""); // Set to the first remaining table or clear it
-      }
-  
       return updatedTables;
     });
-  
+
     // Clear selection and show toast
     setSelectedTablesForDeletion([]);
     toast({
       title: "Tables Deleted",
-      description: `The tables "${selectedTablesForDeletion.join(", ")}" were successfully deleted.`,
+      description: `The tables "${selectedTablesForDeletion.join(
+        ", "
+      )}" were successfully deleted.`,
     });
+
+    // Reset current table if it was deleted
+    if (selectedTablesForDeletion.includes(currentTable)) {
+      setCurrentTable("");
+    }
   };
-  
 
   const handleSaveTableEdits = () => {
     const newTableNames = Object.values(editedTableNames);
@@ -281,6 +279,7 @@ export default function Tablespace() {
   };
 
 
+
   return (
     <>
       <div className="w-full max-w-8xl mx-auto p-4 space-y-6">
@@ -419,11 +418,10 @@ export default function Tablespace() {
                 <CardHeader className="border-b">
                   <CardTitle className="text-xl font-semibold text-primary">
                     Columns in {currentTable}
-                    <Button variant="default" className="ml-14" asChild>
-                      <a href="/DataWorkspace">
-                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                        Add Data
-                      </a>
+                    <Button variant="default" className="ml-10" asChild>
+                      <Link href={'/DataWorkspace'}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      Add Data</Link>
                     </Button>
                   </CardTitle>
                 </CardHeader>
