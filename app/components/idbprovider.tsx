@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useRef } from "react";
 import { getFromIndexedDB, saveToIndexedDB } from "@/utils/indexedDBUtils";
 
 // Type for table data
@@ -29,14 +29,23 @@ export default function IDBProvider({
   const [tables, setTables] = useState<Record<string, TableData>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentTable, setCurrentTable] = useState<string>("");
+  const lastCurrentTableRef = useRef<string | null>(null);
+
 
   useEffect(() => {
-    if (isLoaded && Object.keys(tables).length > 0) {
+    lastCurrentTableRef.current = currentTable;
+  }, [currentTable]);
+  
+
+  useEffect(() => {
+    if (isLoaded) {
+      // Save to IndexedDB when the state changes, even if empty
       saveToIndexedDB("TableState", tables).catch((err) =>
         console.error("Failed to save state to IndexedDB:", err)
       );
     }
-  }, [tables, isLoaded]);
+  }, [JSON.stringify(tables), isLoaded]); // Serialize tables to track deep changes
+  
 
   useEffect(() => {
     async function loadState() {
@@ -44,11 +53,17 @@ export default function IDBProvider({
         const savedState = await getFromIndexedDB<Record<string, TableData>>(
           "TableState"
         );
+  
         if (savedState) {
           setTables(savedState);
-          const firstTableName = Object.keys(savedState)[0];
-          if (firstTableName) {
-            setCurrentTable(firstTableName);
+          
+          // Use the last known table if it exists and is valid
+          if (lastCurrentTableRef.current && savedState[lastCurrentTableRef.current]) {
+            setCurrentTable(lastCurrentTableRef.current);
+          } else {
+            // Fallback to the first table
+            const firstTableName = Object.keys(savedState)[0];
+            setCurrentTable(firstTableName || "");
           }
         }
       } catch (error) {
@@ -59,6 +74,7 @@ export default function IDBProvider({
     }
     loadState();
   }, []);
+  
 
   return (
     <TableStateContext.Provider
