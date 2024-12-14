@@ -114,8 +114,8 @@ export default function Tablespace() {
         delete updatedTables[tableName];
       });
       return updatedTables;
-    });
-
+    });    
+  
     // Clear selection and show toast
     setSelectedTablesForDeletion([]);
     toast({
@@ -124,12 +124,13 @@ export default function Tablespace() {
         ", "
       )}" were successfully deleted.`,
     });
-
+  
     // Reset current table if it was deleted
     if (selectedTablesForDeletion.includes(currentTable)) {
       setCurrentTable("");
     }
   };
+  
 
   const handleSaveTableEdits = () => {
     const newTableNames = Object.values(editedTableNames);

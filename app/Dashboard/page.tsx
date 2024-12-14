@@ -138,12 +138,8 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
         <div className="space-x-2">
           {navItems.map((item) => (
-            <Button variant="default" asChild>
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn("transition-colors ")}
-              >
+            <Button key={item.href} variant="default" asChild>
+              <Link href={item.href} className={cn("transition-colors ")}>
                 {item.icon}
                 {item.name}
               </Link>

@@ -29,17 +29,15 @@ export default function IDBProvider({
   const [tables, setTables] = useState<Record<string, TableData>>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentTable, setCurrentTable] = useState<string>("");
-  
 
-  useEffect(() => {
-    if (isLoaded) {
-      // Save to IndexedDB when the state changes, even if empty
-      saveToIndexedDB("TableState", tables).catch((err) =>
-        console.error("Failed to save state to IndexedDB:", err)
-      );
-    }
-  }, [JSON.stringify(tables), isLoaded]); // Serialize tables to track deep changes
-  
+useEffect(() => {
+  if (isLoaded) {
+    saveToIndexedDB("TableState", tables).catch((err) =>
+      console.error("Failed to save state to IndexedDB:", err)
+    );
+  }
+}, [JSON.stringify(tables), isLoaded]);
+
 
   useEffect(() => {
     async function loadState() {
