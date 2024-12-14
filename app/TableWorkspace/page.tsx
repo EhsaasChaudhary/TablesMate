@@ -278,8 +278,6 @@ export default function Tablespace() {
     });
   };
 
-
-
   return (
     <>
       <div className="w-full max-w-8xl mx-auto p-4 space-y-6">
@@ -419,9 +417,10 @@ export default function Tablespace() {
                   <CardTitle className="text-xl font-semibold text-primary">
                     Columns in {currentTable}
                     <Button variant="default" className="ml-10" asChild>
-                      <Link href={'/DataWorkspace'}>
-                      <FileSpreadsheet className="mr-2 h-4 w-4" />
-                      Add Data</Link>
+                      <Link href={"/DataWorkspace"}>
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                        Add Data
+                      </Link>
                     </Button>
                   </CardTitle>
                 </CardHeader>

@@ -38,6 +38,21 @@ import {
   Table2,
 } from "lucide-react";
 import { TableStateContext } from "../components/idbprovider";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  {
+    name: "Table Workspace",
+    href: "/TableWorkspace",
+    icon: <Table2 className="mr-2 h-4 w-4" />,
+  },
+  {
+    name: "Data Workspace",
+    href: "/DataWorkspace",
+    icon: <FileSpreadsheet className="mr-2 h-4 w-4" />,
+  },
+];
 
 const COLORS = [
   "#0088FE",
@@ -122,18 +137,18 @@ export default function Dashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
         <div className="space-x-2">
-          <Button variant="default" asChild>
-            <a href="/TableWorkspace">
-              <Table2 className="mr-2 h-4 w-4" />
-              Go To Table WorkSpace
-            </a>
-          </Button>
-          <Button variant="default" asChild>
-            <a href="/DataWorkspace">
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Go To Data WorkSpace
-            </a>
-          </Button>
+          {navItems.map((item) => (
+            <Button variant="default" asChild>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn("transition-colors ")}
+              >
+                {item.icon}
+                {item.name}
+              </Link>
+            </Button>
+          ))}
         </div>
       </div>
 
