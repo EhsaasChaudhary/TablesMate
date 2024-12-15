@@ -210,62 +210,6 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Data Distribution Across Tables</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Row Count per Table</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barChartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="rows" fill="#8884d8">
-                  {barChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Table-Specific Statistics</CardTitle>
@@ -279,80 +223,185 @@ export default function Dashboard() {
               <SelectValue placeholder="Select a table" />
             </SelectTrigger>
             <SelectContent>
-              {Object.keys(tables).map((tableName) => (
-                <SelectItem key={tableName} value={tableName}>
-                  {tableName}
+              {Object.keys(tables).length > 0 ? (
+                Object.keys(tables).map((tableName) => (
+                  <SelectItem key={tableName} value={tableName}>
+                    {tableName}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="No Table Found, Please Add Table" disabled>
+                  No Table Found, Please Add Table
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
 
-          {selectedTableStats && (
-            <div className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Object.keys(tables).length === 0 ? (
+            <div className="bg-card p-6 mt-4 text-center rounded-md shadow space-y-4">
+              <p className="text-lg font-semibold text-black">
+                No tables found. Please Add Tables
+              </p>
+              <Button variant="default" className="ml-10" asChild>
+                <Link href={"/TableWorkspace"}>
+                  <Table2 className="mr-2 h-4 w-4" />
+                  Add Tables
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            selectedTableStats && (
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Table Name
+                      </CardTitle>
+                      <TableIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {selectedTableStats.name}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Columns
+                      </CardTitle>
+                      <Columns className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {selectedTableStats.columns}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Rows
+                      </CardTitle>
+                      <Rows className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {selectedTableStats.rows}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Table Name
-                    </CardTitle>
-                    <TableIcon className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader>
+                    <CardTitle>Column Names</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedTableStats.name}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Columns
-                    </CardTitle>
-                    <Columns className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedTableStats.columns}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Rows</CardTitle>
-                    <Rows className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {selectedTableStats.rows}
-                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Column Name</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedTableStats.columnNames.length > 0 ? (
+                          selectedTableStats.columnNames.map((columnName) => (
+                            <TableRow key={columnName}>
+                              <TableCell>{columnName}</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell className="text-center">
+                              No columns found, Please add columns on Table Workspace
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
               </div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Column Names</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Column Name</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedTableStats.columnNames.map((columnName) => (
-                        <TableRow key={columnName}>
-                          <TableCell>{columnName}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
+            )
           )}
         </CardContent>
       </Card>
+
+      {Object.keys(tables).length > 0 && 
+  Object.values(tables).some(
+    (table) => table.columns.length > 0 && table.rows.length > 0
+  ) ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Data Distribution Across Tables</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+              >
+                {pieChartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Row Count per Table</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={barChartData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="rows" fill="#8884d8">
+                {barChartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  ) : (
+    <div className="bg-card p-6 text-center rounded-md shadow space-y-4">
+      <p className="text-lg font-semibold text-black">
+        No data available. Please add columns and rows to your tables.
+      </p>
+      <Button variant="default" className="ml-10" asChild>
+        <Link href={"/TableWorkspace"}>
+          <Table2 className="mr-2 h-4 w-4" />
+          Add Data
+        </Link>
+      </Button>
+    </div>
+  )
+}
+
     </div>
   );
 }

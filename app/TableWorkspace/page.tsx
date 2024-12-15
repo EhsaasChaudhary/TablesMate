@@ -360,7 +360,7 @@ export default function Tablespace() {
           <CardContent className="space-y-6 pt-6">
             <div className="space-y-4">
               <Label htmlFor="newTableName" className="text-sm font-medium">
-                New Table Name
+                Add New Table
               </Label>
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Input
@@ -389,11 +389,20 @@ export default function Tablespace() {
                   <SelectValue placeholder="Select a table" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(tables).map((tableName) => (
-                    <SelectItem key={tableName} value={tableName}>
-                      {tableName}
+                  {Object.keys(tables).length > 0 ? (
+                    Object.keys(tables).map((tableName) => (
+                      <SelectItem key={tableName} value={tableName}>
+                        {tableName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem
+                      value="No Table Found, Please Add Table"
+                      disabled
+                    >
+                      No Table Found, Please Add Table
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -401,6 +410,7 @@ export default function Tablespace() {
         </Card>
 
         <AnimatePresence>
+          {/* Render "Working on Table" card only when a table is selected */}
           {currentTable && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -408,7 +418,6 @@ export default function Tablespace() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Main Table Card */}
               <Card className="bg-card">
                 <CardHeader className="border-b">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
@@ -446,7 +455,7 @@ export default function Tablespace() {
                 <CardContent className="space-y-6 pt-6">
                   <div className="space-y-4">
                     <Label htmlFor="columnName" className="text-sm font-medium">
-                      Column Name
+                      Add New Columns
                     </Label>
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                       <Input
@@ -465,8 +474,19 @@ export default function Tablespace() {
                   </div>
                 </CardContent>
               </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* New Card for Displaying Columns */}
+        <AnimatePresence>
+          {/* Render "Columns in Table" card only when there are columns in the current table */}
+          {currentTable && tables[currentTable]?.columns?.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
               <Card className="bg-card mt-6">
                 <CardHeader className="border-b">
                   <CardTitle className="text-xl font-semibold text-primary">
