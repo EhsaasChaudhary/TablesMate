@@ -51,6 +51,11 @@ export default function Dataspace() {
   const [editedRowData, setEditedRowData] = useState<Record<string, string>>(
     {}
   );
+  const [selectedColumnsForDeletion, setSelectedColumnsForDeletion] = useState<
+    string[]
+  >([]);
+  const [confirmDeleteColumnsModalOpen, setConfirmDeleteColumnsModalOpen] =
+    useState(false);
   const { toast } = useToast();
 
   const addRow = () => {
@@ -113,7 +118,7 @@ export default function Dataspace() {
     setIsEditModalOpen(false);
   };
 
-  const deleteColumn = (col: string) => {
+  const handleDeleteColumns = () => {
     if (!currentTable) {
       toast({
         title: "Error",
@@ -127,20 +132,26 @@ export default function Dataspace() {
       const updatedTable = {
         ...prevTables[currentTable],
         columns: prevTables[currentTable].columns.filter(
-          (column) => column !== col
+          (column) => !selectedColumnsForDeletion.includes(column)
         ),
         rows: prevTables[currentTable].rows.map((row) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [col]: _, ...remainingRow } = row; // Remove the column from row data
-          return remainingRow;
+          const updatedRow = { ...row };
+          selectedColumnsForDeletion.forEach((col) => {
+            delete updatedRow[col];
+          });
+          return updatedRow;
         }),
       };
       return { ...prevTables, [currentTable]: updatedTable };
     });
 
+    // Clear selected columns and show toast
+    setSelectedColumnsForDeletion([]);
     toast({
-      title: "Column Deleted",
-      description: `Column "${col}" has been deleted from "${currentTable}".`,
+      title: "Columns Deleted",
+      description: `Columns "${selectedColumnsForDeletion.join(
+        ", "
+      )}" have been deleted.`,
     });
   };
 
@@ -221,7 +232,10 @@ export default function Dataspace() {
                           <Button
                             variant="destructive"
                             size="icon"
-                            onClick={() => deleteColumn(col)}
+                            onClick={() => {
+                              setSelectedColumnsForDeletion([col]); // Set the selected column
+                              setConfirmDeleteColumnsModalOpen(true);
+                            }}
                             className="flex-shrink-0"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -230,6 +244,7 @@ export default function Dataspace() {
                       </div>
                     ))}
                   </div>
+
                   <Button onClick={addRow} className="w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Row
@@ -354,6 +369,46 @@ export default function Dataspace() {
             </Button>
             <Button variant="destructive" onClick={confirmDeleteRow}>
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Delete Columns Modal */}
+      <Dialog
+        open={confirmDeleteColumnsModalOpen}
+        onOpenChange={setConfirmDeleteColumnsModalOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Column Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>
+              Are you sure you want to delete the following columns? This action
+              cannot be undone:
+            </p>
+            <ul className="list-disc list-inside">
+              {selectedColumnsForDeletion.map((col) => (
+                <li key={col}>{col}</li>
+              ))}
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteColumnsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                handleDeleteColumns();
+                setConfirmDeleteColumnsModalOpen(false);
+              }}
+            >
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>

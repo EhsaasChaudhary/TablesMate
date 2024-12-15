@@ -47,20 +47,26 @@ export default function Tablespace() {
 
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [newTableName, setNewTableName] = useState<string>("");
   const [selectedTablesForDeletion, setSelectedTablesForDeletion] = useState<
     string[]
   >([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editedTableNames, setEditedTableNames] = useState<
     Record<string, string>
   >({});
+  const [newTableName, setNewTableName] = useState<string>("");
 
   // this is states for columns
 
   const [columnName, setColumnName] = useState<string>("");
   const [editColumnsModalOpen, setEditColumnsModalOpen] = useState(false);
   const [editedColumns, setEditedColumns] = useState<string[]>([]);
+  const [deleteColumnsModalOpen, setDeleteColumnsModalOpen] = useState(false);
+  const [confirmDeleteColumnsModalOpen, setConfirmDeleteColumnsModalOpen] =
+    useState(false);
+  const [selectedColumnsForDeletion, setSelectedColumnsForDeletion] = useState<
+    string[]
+  >([]);
 
   const { toast } = useToast();
 
@@ -114,8 +120,8 @@ export default function Tablespace() {
         delete updatedTables[tableName];
       });
       return updatedTables;
-    });    
-  
+    });
+
     // Clear selection and show toast
     setSelectedTablesForDeletion([]);
     toast({
@@ -124,13 +130,12 @@ export default function Tablespace() {
         ", "
       )}" were successfully deleted.`,
     });
-  
+
     // Reset current table if it was deleted
     if (selectedTablesForDeletion.includes(currentTable)) {
       setCurrentTable("");
     }
   };
-  
 
   const handleSaveTableEdits = () => {
     const newTableNames = Object.values(editedTableNames);
@@ -225,6 +230,43 @@ export default function Tablespace() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDeleteColumns = () => {
+    if (!currentTable) {
+      toast({
+        title: "Error",
+        description: "No table selected to delete columns from.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTables((prevTables) => {
+      const updatedTable = {
+        ...prevTables[currentTable],
+        columns: prevTables[currentTable].columns.filter(
+          (column) => !selectedColumnsForDeletion.includes(column)
+        ),
+        rows: prevTables[currentTable].rows.map((row) => {
+          const updatedRow = { ...row };
+          selectedColumnsForDeletion.forEach((col) => {
+            delete updatedRow[col];
+          });
+          return updatedRow;
+        }),
+      };
+      return { ...prevTables, [currentTable]: updatedTable };
+    });
+
+    // Clear selected columns and show toast
+    setSelectedColumnsForDeletion([]);
+    toast({
+      title: "Columns Deleted",
+      description: `Columns "${selectedColumnsForDeletion.join(
+        ", "
+      )}" have been deleted.`,
+    });
   };
 
   const saveColumnChanges = () => {
@@ -373,22 +415,34 @@ export default function Tablespace() {
                     <CardTitle className="text-xl font-semibold text-primary">
                       Working on Table: {currentTable}
                     </CardTitle>
-                    <Button
-                      onClick={() => {
-                        if (currentTable) {
-                          setEditedColumns([...tables[currentTable].columns]);
-                          setEditColumnsModalOpen(true);
-                        }
-                      }}
-                      disabled={!currentTable}
-                      variant="outline"
-                      className="w-full sm:w-auto"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Columns
-                    </Button>
+                    <div className="space-x-2">
+                      <Button
+                        onClick={() => {
+                          if (currentTable) {
+                            setEditedColumns([...tables[currentTable].columns]);
+                            setEditColumnsModalOpen(true);
+                          }
+                        }}
+                        disabled={!currentTable}
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Columns
+                      </Button>
+                      <Button
+                        onClick={() => setDeleteColumnsModalOpen(true)}
+                        disabled={!currentTable}
+                        variant="destructive"
+                        className="w-full sm:w-auto"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Columns
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
+
                 <CardContent className="space-y-6 pt-6">
                   <div className="space-y-4">
                     <Label htmlFor="columnName" className="text-sm font-medium">
@@ -464,7 +518,7 @@ export default function Tablespace() {
 
       {/* modals start here */}
 
-      {/* Delete Modal */}
+      {/* table Delete Modal */}
       <Dialog
         open={deleteModalOpen}
         onOpenChange={(isOpen) => {
@@ -522,7 +576,7 @@ export default function Tablespace() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirm Delete Modal */}
+      {/* Confirm table Delete Modal */}
       <Dialog
         open={confirmDeleteModalOpen}
         onOpenChange={setConfirmDeleteModalOpen}
@@ -562,7 +616,7 @@ export default function Tablespace() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Modal */}
+      {/* table Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -604,7 +658,7 @@ export default function Tablespace() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Columns */}
+      {/* Edit Columns modal */}
       <Dialog
         open={editColumnsModalOpen}
         onOpenChange={setEditColumnsModalOpen}
@@ -649,6 +703,113 @@ export default function Tablespace() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Columns Modal */}
+      <Dialog
+        open={deleteColumnsModalOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setDeleteColumnsModalOpen(false);
+            setSelectedColumnsForDeletion([]);
+          } else {
+            setDeleteColumnsModalOpen(true);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Columns</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Label>Select columns to delete:</Label>
+            <div className="space-y-2">
+              {currentTable &&
+                tables[currentTable].columns.map((col) => (
+                  <div key={col} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={col}
+                      checked={selectedColumnsForDeletion.includes(col)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedColumnsForDeletion((prev) => [
+                            ...prev,
+                            col,
+                          ]);
+                        } else {
+                          setSelectedColumnsForDeletion((prev) =>
+                            prev.filter((column) => column !== col)
+                          );
+                        }
+                      }}
+                    />
+                    <Label htmlFor={col}>{col}</Label>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteColumnsModalOpen(false);
+                setSelectedColumnsForDeletion([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmDeleteColumnsModalOpen(true);
+                setDeleteColumnsModalOpen(false);
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Delete Columns Modal */}
+      <Dialog
+        open={confirmDeleteColumnsModalOpen}
+        onOpenChange={setConfirmDeleteColumnsModalOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Column Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>
+              Are you sure you want to delete the following columns? This action
+              cannot be undone:
+            </p>
+            <ul className="list-disc list-inside">
+              {selectedColumnsForDeletion.map((col) => (
+                <li key={col}>{col}</li>
+              ))}
+            </ul>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteColumnsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                handleDeleteColumns();
+                setConfirmDeleteColumnsModalOpen(false);
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Toaster />
     </>
   );
