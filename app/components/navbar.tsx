@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Menu, X, Table } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from './themetoggle'
 
 const navItems = [
   { name: 'Dashboard', href: '/' },
@@ -60,16 +61,24 @@ export function Navbar() {
           ))}
         </div>
 
+        <div className="hidden md:flex md:absolute md:right-4">
+          <ThemeToggle/>
+        </div>
+
         {/* Mobile Navigation */}
         <div className="md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          <div className="flex items-center">
+            <ThemeToggle/>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+              className="ml-2"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
       </div>
 

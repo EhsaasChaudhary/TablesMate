@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import IDBProvider from "./components/idbprovider";
 import { Navbar } from "./components/navbar";
+import { ThemeProvider } from "./components/themeprovider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,12 +30,19 @@ export default function RootLayout({
     <>
       <html lang="en">
         <IDBProvider>
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
           >
-            <Navbar />
-            {children}
-          </body>
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+              <Navbar />
+              {children}
+            </body>
+          </ThemeProvider>
         </IDBProvider>
       </html>
     </>

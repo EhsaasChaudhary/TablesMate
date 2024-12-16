@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo, useContext, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -36,9 +42,12 @@ import {
   Rows,
   FileSpreadsheet,
   Table2,
+  Info,
+  PlusCircle,
 } from "lucide-react";
 import { TableStateContext } from "../components/idbprovider";
 import Link from "next/link";
+import { Dialog, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 const navItems = [
   {
@@ -216,198 +225,222 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Table-Specific Statistics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select
-            onValueChange={setSelectedTable}
-            value={selectedTable || undefined}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a table" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(tables).length > 0 ? (
-                Object.keys(tables).map((tableName) => (
-                  <SelectItem key={tableName} value={tableName}>
-                    {tableName}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="No Table Found, Please Add Table" disabled>
-                  No Table Found, Please Add Table
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+      {Object.keys(tables).length === 0 ? (
+        // Render when no tables are available
 
-          {Object.keys(tables).length === 0 ? (
-            <div className="bg-card p-4 mt-4 text-center rounded-md shadow space-y-4">
-              <p className="text-base sm:text-lg font-semibold text-black">
-                No tables found. Please Add Tables
+        <Card className="w-full max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">
+              No Data Available
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Dialog>
+              <Info className="h-4 w-4" />
+              <DialogTitle>Getting Started</DialogTitle>
+              <DialogDescription>
+                To begin using the application, you will need to add columns and
+                rows to your tables.
+              </DialogDescription>
+            </Dialog>
+            <div className="text-center space-y-2">
+              <p className="text-muted-foreground">
+                Create your first table and start organizing your data
+                efficiently.
               </p>
-              <Button variant="default" className="w-full sm:w-auto" asChild>
-                <Link href={"/TableWorkspace"}>
-                  <Table2 className="mr-2 h-4 w-4" />
-                  Add Tables
-                </Link>
-              </Button>
+              <Table className="h-16 w-16 mx-auto text-primary" />
             </div>
-          ) : (
-            selectedTableStats && (
-              <div className="mt-4 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button variant="default" size="lg" asChild>
+              <Link href={"/TableWorkspace"} className="flex items-center">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Table
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      ) : (
+        // Render Table-Specific Statistics when tables exist
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Table-Specific Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                onValueChange={setSelectedTable}
+                value={selectedTable || undefined}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a table" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(tables).map((tableName) => (
+                    <SelectItem key={tableName} value={tableName}>
+                      {tableName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {selectedTableStats && (
+                <div className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Table Name
+                        </CardTitle>
+                        <TableIcon className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xl sm:text-2xl font-bold">
+                          {selectedTableStats.name}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Columns
+                        </CardTitle>
+                        <Columns className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xl sm:text-2xl font-bold">
+                          {selectedTableStats.columns}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Rows
+                        </CardTitle>
+                        <Rows className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xl sm:text-2xl font-bold">
+                          {selectedTableStats.rows}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Table Name
-                      </CardTitle>
-                      <TableIcon className="h-4 w-4 text-muted-foreground" />
+                    <CardHeader>
+                      <CardTitle>Column Names</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-xl sm:text-2xl font-bold">
-                        {selectedTableStats.name}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Columns
-                      </CardTitle>
-                      <Columns className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-xl sm:text-2xl font-bold">
-                        {selectedTableStats.columns}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Rows
-                      </CardTitle>
-                      <Rows className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-xl sm:text-2xl font-bold">
-                        {selectedTableStats.rows}
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Column Name</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedTableStats.columnNames.length > 0 ? (
+                              selectedTableStats.columnNames.map(
+                                (columnName) => (
+                                  <TableRow key={columnName}>
+                                    <TableCell>{columnName}</TableCell>
+                                  </TableRow>
+                                )
+                              )
+                            ) : (
+                              <TableRow>
+                                <TableCell className="text-center">
+                                  No columns found, Please add columns on Table
+                                  Workspace
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Column Names</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Column Name</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {selectedTableStats.columnNames.length > 0 ? (
-                            selectedTableStats.columnNames.map((columnName) => (
-                              <TableRow key={columnName}>
-                                <TableCell>{columnName}</TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell className="text-center">
-                                No columns found, Please add columns on Table
-                                Workspace
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
 
-      {Object.keys(tables).length > 0 &&
-      Object.values(tables).some(
-        (table) => table.columns.length > 0 && table.rows.length > 0
-      ) ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Data Distribution Across Tables</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieChartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius="80%"
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {pieChartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Row Count per Table</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barChartData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="rows" fill="#8884d8">
-                    {barChartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div className="bg-card p-4 text-center rounded-md shadow space-y-4">
-          <p className="text-base sm:text-lg font-semibold text-black">
-            No data available. Please add columns and rows to your tables.
-          </p>
-          <Button variant="default" className="w-full sm:w-auto" asChild>
-            <Link href={"/TableWorkspace"}>
-              <Table2 className="mr-2 h-4 w-4" />
-              Add Data
-            </Link>
-          </Button>
-        </div>
+          {/* Render statistics section only if there are columns and rows */}
+          {Object.values(tables).some(
+            (table) => table.columns.length > 0 && table.rows.length > 0
+          ) ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Data Distribution Across Tables</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius="80%"
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Row Count per Table</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barChartData}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="rows" fill="#8884d8">
+                        {barChartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="mt-6">
+              <div className="bg-card p-4 text-center rounded-md shadow space-y-4">
+                <p className="text-muted-foreground sm:text-lg font-semibold">
+                  No data available. Please add columns and rows to your tables.
+                </p>
+                <Button variant="default" className="w-full sm:w-auto" asChild>
+                  <Link href={"/TableWorkspace"}>
+                    <Table2 className="mr-2 h-4 w-4" />
+                    Add Data
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );
