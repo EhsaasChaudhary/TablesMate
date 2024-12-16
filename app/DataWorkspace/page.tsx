@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +59,22 @@ export default function Dataspace() {
     useState(false);
   const { toast } = useToast();
 
-  const addRow = () => {
+
+  useEffect(() => {
     if (currentTable) {
+      // Initialize rowData with empty strings for each column in the current table
+      const initialRowData: Record<string, string> = {};
+      tables[currentTable]?.columns.forEach((col) => {
+        initialRowData[col] = ""; // Set each field as an empty string
+      });
+      setRowData(initialRowData); // Set the state to the initialized empty row data
+    }
+  }, [currentTable, tables]);
+  
+
+  const addRow = () => {
+    // Check if there is valid data in rowData before proceeding
+    if (currentTable && Object.values(rowData).every((value) => value !== "")) {
       setTables((prevTables) => {
         const updatedTable = {
           ...prevTables[currentTable],
@@ -68,13 +82,32 @@ export default function Dataspace() {
         };
         return { ...prevTables, [currentTable]: updatedTable };
       });
-      setRowData({});
+  
+      // Reset rowData after adding the row
+      setRowData(() => {
+        // Reset rowData to empty strings for each column of the current table
+        const initialRowData: Record<string, string> = {};
+        tables[currentTable]?.columns.forEach((col) => {
+          initialRowData[col] = ""; // Initialize each field as an empty string
+        });
+        return initialRowData;
+      });
+  
+      // Show success toast message
       toast({
         title: "Row Added",
         description: `New row has been added to "${currentTable}".`,
       });
+    } else {
+      // If rowData is invalid (contains empty fields), show a warning toast
+      toast({
+        title: "Invalid Input",
+        description: "Please fill in all fields before adding the row.",
+        variant: "destructive",
+      });
     }
   };
+  
 
   const confirmDeleteRow = () => {
     if (currentRowIndex !== null && currentTable) {
@@ -166,10 +199,19 @@ export default function Dataspace() {
     setCurrentRowIndex(rowIndex);
     setIsDeleteModalOpen(true);
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, col: string) => {
+    const value = e.target.value;
+    setRowData((prevState) => ({
+      ...prevState,
+      [col]: value,
+    }));
+  };
+
   return (
     <>
-      <div className="w-full p-4 max-w-8xl mx-auto">
-        <Card className="bg-card shadow w-full max-w-8xl mx-auto">
+      <div className="w-full max-w-8xl mx-auto p-4 space-y-6">
+        <Card className="bg-card shadow">
           <CardHeader className="border-b">
             <CardTitle className="text-2xl font-bold text-primary">
               Table Data Manager
@@ -195,7 +237,10 @@ export default function Dataspace() {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="No Table Found, Please Add Table" disabled>
+                    <SelectItem
+                      value="No Table Found, Please Add Table"
+                      disabled
+                    >
                       No Table Found, Please Add Table
                     </SelectItem>
                   )}
@@ -204,168 +249,188 @@ export default function Dataspace() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <AnimatePresence>
-        {currentTable && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full pb-4 pr-4 pl-4 max-w-8xl mx-auto"
-          >
-            {tables[currentTable]?.columns.length > 0 ? (
-              <Card className="bg-card shadow-lg w-full max-w-8xl mx-auto">
-                <CardHeader className="border-b">
-                  <CardTitle className="text-xl font-semibold text-primary">
-                    Working on Table: {currentTable}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 p-6">
-                  {/* Add Row Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-primary">
-                      Add Row
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {tables[currentTable]?.columns.map((col) => (
-                        <div key={col} className="space-y-2">
-                          <Label
-                            htmlFor={`input-${col}`}
-                            className="text-sm font-medium"
-                          >
-                            {col}
-                          </Label>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              id={`input-${col}`}
-                              type="text"
-                              className="flex-grow"
-                              placeholder={`Enter ${col}`}
-                              value={rowData[col] || ""}
-                              onChange={(e) =>
-                                setRowData({
-                                  ...rowData,
-                                  [col]: e.target.value,
-                                })
-                              }
-                            />
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedColumnsForDeletion([col]);
-                                setConfirmDeleteColumnsModalOpen(true);
-                              }}
-                              className="flex-shrink-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+        <AnimatePresence>
+          {currentTable && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {tables[currentTable]?.columns.length > 0 ? (
+                <Card className="bg-card shadow-lg">
+                  <CardHeader className="border-b">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                      <CardTitle className="text-xl font-semibold text-primary">
+                        Working on Table: {currentTable}
+                      </CardTitle>
                     </div>
-                    <Button onClick={addRow} className="w-full sm:w-auto">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Data
-                    </Button>
-                  </div>
-
-                  {/* Table Preview Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-primary">
-                      Table Preview
-                    </h3>
-
-                    <div className="border rounded-md overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-muted">
-                            <TableHead className="w-[100px] font-bold">
-                              Count
-                            </TableHead>
-                            {tables[currentTable]?.columns.map((col) => (
-                              <TableHead key={col} className="font-bold">
-                                {col}
-                              </TableHead>
-                            ))}
-                            <TableHead className="font-bold">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-
-                        <TableBody>
-                          {tables[currentTable]?.rows.length > 0 ? (
-                            tables[currentTable]?.rows.map((row, rowIndex) => (
-                              <TableRow
-                                key={rowIndex}
-                                className="hover:bg-muted/50 transition-colors"
+                  </CardHeader>
+                  <CardContent className="space-y-6 p-6">
+                    {/* Add Row Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-primary">
+                        Add Row
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {tables[currentTable]?.columns.map((col) => (
+                          <div key={col} className="space-y-2">
+                            <Label
+                              htmlFor={`input-${col}`}
+                              className="text-sm font-medium"
+                            >
+                              {col}
+                            </Label>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                id={`input-${col}`}
+                                type="text"
+                                className="flex-grow"
+                                placeholder={`Enter ${col}`}
+                                value={rowData[col] || ""}
+                                onChange={(e) => handleInputChange(e, col)}
+                              />
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedColumnsForDeletion([col]);
+                                  setConfirmDeleteColumnsModalOpen(true);
+                                }}
+                                className="flex-shrink-0"
                               >
-                                <TableCell className="font-medium">
-                                  {rowIndex + 1}
-                                </TableCell>
-                                {tables[currentTable]?.columns.map((col) => (
-                                  <TableCell key={col}>
-                                    {row[col] || ""}
-                                  </TableCell>
-                                ))}
-                                <TableCell>
-                                  <div className="flex space-x-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleEditRow(rowIndex)}
-                                    >
-                                      <Edit2 className="mr-2 h-4 w-4" />
-                                      Edit
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      onClick={() => handleDeleteRow(rowIndex)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </Button>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={addRow}
+                        className="w-36 h-10 flex items-center justify-center"
+                        disabled={Object.values(rowData).some((value) => value === "")}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Data
+                      </Button>
+                    </div>
+
+                    {/* Table Preview Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-primary">
+                        Table Preview
+                      </h3>
+
+                      <div className="border rounded-md overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-muted">
+                              <TableHead className="w-[100px] font-bold">
+                                Count
+                              </TableHead>
+                              {tables[currentTable]?.columns.map((col) => (
+                                <TableHead key={col} className="font-bold">
+                                  {col}
+                                </TableHead>
+                              ))}
+                              <TableHead className="font-bold">
+                                Actions
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+
+                          <TableBody>
+                            {tables[currentTable]?.rows.length > 0 ? (
+                              tables[currentTable]?.rows.map(
+                                (row, rowIndex) => (
+                                  <TableRow
+                                    key={rowIndex}
+                                    className="hover:bg-muted/50 transition-colors"
+                                  >
+                                    <TableCell className="font-medium">
+                                      {rowIndex + 1}
+                                    </TableCell>
+                                    {tables[currentTable]?.columns.map(
+                                      (col) => (
+                                        <TableCell key={col}>
+                                          {row[col] || ""}
+                                        </TableCell>
+                                      )
+                                    )}
+                                    <TableCell>
+                                      <div className="flex flex-nowrap gap-2">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleEditRow(rowIndex)
+                                          }
+                                          className=" w-12 sm:w-20 h-8 flex items-center justify-center"
+                                        >
+                                          <Edit2 className="h-4 w-4" />
+                                          <span className="hidden sm:inline">
+                                            Edit
+                                          </span>
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleDeleteRow(rowIndex)
+                                          }
+                                          className="w-12 sm:w-20 h-8 flex items-center justify-center"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                          <span className="hidden sm:inline">
+                                            Delete
+                                          </span>
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              )
+                            ) : (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={
+                                    tables[currentTable]?.columns.length + 2
+                                  }
+                                >
+                                  <div className="text-center text-sm text-muted-foreground">
+                                    No data available. Please add data.
                                   </div>
                                 </TableCell>
                               </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell
-                                colSpan={
-                                  tables[currentTable]?.columns.length + 2
-                                }
-                              >
-                                <div className="text-center text-sm text-black">
-                                  No data available. Please add data.
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="bg-card p-6 text-center rounded-md shadow space-y-4">
-                <p className="text-lg font-semibold text-black">
-                  Add columns to start working on this table.
-                </p>
-                <Button variant="default" className="ml-10" asChild>
-                  <Link href={"/TableWorkspace"}>
-                    <Table2 className="mr-2 h-4 w-4" />
-                    Add Columns
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-card p-6 text-center shadow space-y-4">
+                  <p className="text-lg font-semibold text-muted-foreground">
+                    Add columns to start working on this table.
+                  </p>
+                  <Button
+                    variant="default"
+                    className="w-full sm:w-auto"
+                    asChild
+                  >
+                    <Link href={"/TableWorkspace"}>
+                      <Table2 className="mr-2 h-4 w-4" />
+                      Add Columns
+                    </Link>
+                  </Button>
+                </Card>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* table row edit modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

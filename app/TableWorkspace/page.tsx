@@ -326,11 +326,11 @@ export default function Tablespace() {
       <div className="w-full max-w-8xl mx-auto p-4 space-y-6">
         <Card className="bg-card">
           <CardHeader className="border-b">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
               <CardTitle className="text-2xl font-bold text-primary">
                 Table Management
               </CardTitle>
-              <div className="space-x-2">
+              <div className="flex flex-wrap justify-start gap-2 sm:gap-4 sm:flex-nowrap">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -341,7 +341,7 @@ export default function Tablespace() {
                     );
                     setEditModalOpen(true);
                   }}
-                  className="w-full sm:w-auto"
+                  className="w-36 h-10 flex items-center justify-center"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Tables
@@ -349,7 +349,7 @@ export default function Tablespace() {
                 <Button
                   variant="destructive"
                   onClick={() => setDeleteModalOpen(true)}
-                  className="w-full sm:w-auto mt-2 sm:mt-0"
+                  className="w-36 h-10 flex items-center justify-center"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete Table
@@ -362,16 +362,20 @@ export default function Tablespace() {
               <Label htmlFor="newTableName" className="text-sm font-medium">
                 Add New Table
               </Label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="flex flex-col md:flex-row md:space-x-2 w-full">
                 <Input
                   id="newTableName"
                   type="text"
                   placeholder="Enter table names separated by commas"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
-                  className="flex-grow"
+                  className="flex-grow h-10 mb-2 md:mb-0"
                 />
-                <Button onClick={addNewTables} className="w-full sm:w-auto">
+                <Button
+                  onClick={addNewTables}
+                  className="w-36 h-10 flex items-center justify-center"
+                  disabled={!newTableName}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Table
                 </Button>
@@ -410,7 +414,6 @@ export default function Tablespace() {
         </Card>
 
         <AnimatePresence>
-          {/* Render "Working on Table" card only when a table is selected */}
           {currentTable && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -420,11 +423,11 @@ export default function Tablespace() {
             >
               <Card className="bg-card">
                 <CardHeader className="border-b">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                     <CardTitle className="text-xl font-semibold text-primary">
                       Working on Table: {currentTable}
                     </CardTitle>
-                    <div className="space-x-2">
+                    <div className="flex flex-wrap justify-start gap-2 sm:gap-4 sm:flex-nowrap">
                       <Button
                         onClick={() => {
                           if (currentTable) {
@@ -434,7 +437,7 @@ export default function Tablespace() {
                         }}
                         disabled={!currentTable}
                         variant="outline"
-                        className="w-full sm:w-auto"
+                        className="w-36 h-10 flex items-center justify-center"
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Columns
@@ -443,7 +446,7 @@ export default function Tablespace() {
                         onClick={() => setDeleteColumnsModalOpen(true)}
                         disabled={!currentTable}
                         variant="destructive"
-                        className="w-full sm:w-auto"
+                        className="w-36 h-10 flex items-center justify-center"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Columns
@@ -457,16 +460,20 @@ export default function Tablespace() {
                     <Label htmlFor="columnName" className="text-sm font-medium">
                       Add New Columns
                     </Label>
-                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <div className="flex flex-col md:flex-row md:space-x-2 w-full">
                       <Input
                         id="columnName"
                         type="text"
                         placeholder="Enter column names separated by commas"
                         value={columnName}
                         onChange={(e) => setColumnName(e.target.value)}
-                        className="flex-grow"
+                        className="flex-grow h-10 mb-2 md:mb-0"
                       />
-                      <Button onClick={addColumns} className="w-full sm:w-auto">
+                      <Button
+                        onClick={addColumns}
+                        className="w-36 h-10 flex items-center justify-center"
+                        disabled={!columnName}
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Column
                       </Button>
@@ -479,7 +486,6 @@ export default function Tablespace() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {/* Render "Columns in Table" card only when there are columns in the current table */}
           {currentTable && tables[currentTable]?.columns?.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -489,46 +495,52 @@ export default function Tablespace() {
             >
               <Card className="bg-card mt-6">
                 <CardHeader className="border-b">
-                  <CardTitle className="text-xl font-semibold text-primary">
-                    Columns in {currentTable}
-                    <Button variant="default" className="ml-10" asChild>
-                      <Link href={"/DataWorkspace"}>
-                        <FileSpreadsheet className="mr-2 h-4 w-4" />
-                        Add Data
-                      </Link>
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full caption-bottom text-sm">
-                      <thead className="[&_tr]:border-b">
-                        <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 w-[100px]">
-                            Column ID
-                          </th>
-                          <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
-                            Column Name
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="[&_tr:last-child]:border-0">
-                        {tables[currentTable]?.columns.map((column, index) => (
-                          <tr
-                            key={index}
-                            className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                          >
-                            <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0 font-medium">
-                              {index + 1}
-                            </td>
-                            <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
-                              {column}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                    <CardTitle className="text-xl font-semibold text-primary">
+                      Columns in {currentTable}
+                    </CardTitle>
+                    <div className="flex flex-wrap justify-start gap-2 sm:gap-4 sm:flex-nowrap">
+                      <Button
+                        variant="default"
+                        className="w-36 h-10 flex items-center justify-center"
+                        asChild
+                      >
+                        <Link href={"/DataWorkspace"}>
+                          <FileSpreadsheet className="mr-2 h-4 w-4" />
+                          Add Data
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
+                </CardHeader>
+                <CardContent className="pt-6 overflow-x-auto">
+                  <table className="w-full caption-bottom text-sm">
+                    <thead className="[&_tr]:border-b">
+                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 w-[100px]">
+                          Column ID
+                        </th>
+                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                          Column Name
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0">
+                      {tables[currentTable]?.columns.map((column, index) => (
+                        <tr
+                          key={index}
+                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                        >
+                          <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0 font-medium">
+                            {index + 1}
+                          </td>
+                          <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
+                            {column}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </CardContent>
               </Card>
             </motion.div>
