@@ -427,7 +427,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <Card className="mt-6">
-              <div className="bg-card p-4 text-center rounded-md shadow space-y-4">
+              <div className="p-6 text-center space-y-4">
                 <p className="text-muted-foreground sm:text-lg font-semibold">
                   No data available. Please add columns and rows to your tables.
                 </p>
@@ -437,7 +437,7 @@ export default function Dashboard() {
                     Add Data
                   </Link>
                 </Button>
-              </div>
+                </div>
             </Card>
           )}
         </>
