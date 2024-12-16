@@ -39,7 +39,6 @@ import {
 } from "lucide-react";
 import { TableStateContext } from "../components/idbprovider";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 const navItems = [
   {
