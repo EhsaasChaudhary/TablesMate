@@ -30,19 +30,19 @@ export default function RootLayout({
     <>
       <html lang="en">
         <IDBProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
-            <body
-              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
             >
               <Navbar />
               {children}
-            </body>
-          </ThemeProvider>
+            </ThemeProvider>
+          </body>
         </IDBProvider>
       </html>
     </>
