@@ -60,11 +60,6 @@ const navItems = [
     href: "/DataWorkspace",
     icon: <FileSpreadsheet className="mr-2 h-4 w-4" />,
   },
-  {
-    name: "Add Data",
-    href: "/TableWorkspace",
-    icon: <Table2 className="mr-2 h-4 w-4" />,
-  },
 ];
 
 const COLORS = [
@@ -439,14 +434,14 @@ export default function Dashboard() {
                 <Button
                   variant="default"
                   asChild
-                  
+                  className="text-xs sm:text-sm"
                 >
                   <Link
-                    href={navItems[2].href}
+                    href={"/TableWorkspace"}
                     className="flex items-center space-x-1"
                   >
-                    {navItems[2].icon}
-                    <span>{navItems[2].name}</span>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <span className="sm:inline">Add Data</span>
                   </Link>
                 </Button>
               </div>
