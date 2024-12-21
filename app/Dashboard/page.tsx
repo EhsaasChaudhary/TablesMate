@@ -60,6 +60,11 @@ const navItems = [
     href: "/DataWorkspace",
     icon: <FileSpreadsheet className="mr-2 h-4 w-4" />,
   },
+  {
+    name: "Add Data",
+    href: "/TableWorkspace",
+    icon: <Table2 className="mr-2 h-4 w-4" />,
+  },
 ];
 
 const COLORS = [
@@ -431,13 +436,21 @@ export default function Dashboard() {
                 <p className="text-muted-foreground sm:text-lg font-semibold">
                   No data available. Please add columns and rows to your tables.
                 </p>
-                <Button variant="default" className="w-full sm:w-auto" asChild>
-                  <Link href={"/TableWorkspace"}>
-                    <Table2 className="mr-2 h-4 w-4" />
-                    Add Data
+                <Button
+                  key={navItems[2].href}
+                  variant="default"
+                  asChild
+                  className="text-xs sm:text-sm"
+                >
+                  <Link
+                    href={navItems[2].href}
+                    className="flex items-center space-x-1"
+                  >
+                    {navItems[2].icon}
+                    <span className="sm:inline">{navItems[2].name}</span>
                   </Link>
                 </Button>
-                </div>
+              </div>
             </Card>
           )}
         </>
