@@ -436,12 +436,12 @@ export default function Dashboard() {
                 <p className="text-muted-foreground sm:text-lg font-semibold">
                   No data available. Please add columns and rows to your tables.
                 </p>
-                <Button
+                {/* <Button
                   key={navItems[2].href}
                   variant="default"
                   asChild
                   className="text-xs sm:text-sm"
-                >
+                > */}
                   <Link
                     href={navItems[2].href}
                     className="flex items-center space-x-1"
@@ -449,7 +449,7 @@ export default function Dashboard() {
                     {navItems[2].icon}
                     <span className="sm:inline">{navItems[2].name}</span>
                   </Link>
-                </Button>
+                {/* </Button> */}
               </div>
             </Card>
           )}
