@@ -48,6 +48,7 @@ import {
 import { TableStateContext } from "../components/idbprovider";
 import Link from "next/link";
 import { Dialog, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { convertTablesToJson } from "@/hooks/tablejson";
 
 const navItems = [
   {
@@ -140,6 +141,12 @@ export default function Dashboard() {
       columnNames: tableData.columns,
     };
   }, [selectedTable, tables]);
+
+  const handlejsonconvert = () => {
+    const jsonResult = convertTablesToJson(tables);
+    console.log(jsonResult); // Call the provided callback with the JSON string
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
@@ -160,6 +167,16 @@ export default function Dashboard() {
               </Link>
             </Button>
           ))}
+          <Button
+            variant="default" // Same variant for consistent styling
+            className="text-xs sm:text-sm" // Same classes for size and text
+            onClick={handlejsonconvert} // Different functionality
+          >
+            <div className="flex items-center space-x-1">
+            {/* <Table className="mr-2 h-4 w-4" /> */}
+              <span>Export JSON</span> {/* Text for the button */}
+            </div>
+          </Button>
         </div>
       </div>
 
